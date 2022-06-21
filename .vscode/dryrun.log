@@ -1,0 +1,6 @@
+make.exe --dry-run --keep-going --print-directory
+make: Entering directory '/c/Users/Kamila/sfml'
+make: Leaving directory '/c/Users/Kamila/sfml'
+ 
+make: *** No targets specified and no makefile found.  Stop.
+
