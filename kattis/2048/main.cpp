@@ -2,6 +2,7 @@
 #include <vector>
 
 using namespace std;
+
 using Grid = vector<vector<int>>;
 
 enum class Direction
@@ -23,27 +24,28 @@ void read_grid(Grid &grid)
     }
 }
 
-bool same_number(int num_1, int num_2)
-{
-    return num_1 == num_2;
-}
-
 void move_left(Grid &grid)
 {
-    for (int i = 0; i < grid.size(); i++)
+    for (int h = 0; h < grid.size(); h++)
     {
-        for (int j = grid.size() - 1; j > 0; j--)
+        vector<bool> move(grid.size(), true);
+
+        for (int i = 0; i < grid.size(); i++)
         {
-            if (same_number(grid[i][j], grid[i][j - 1]))
+            for (int j = i; j > 0 && move[j - 1]; j--)
             {
-                grid[i][j - 1] *= 2;
-                grid[i][j] = 0;
-                break;
-            }
-            else if (grid[i][j - 1] == 0)
-            {
-                grid[i][j - 1] = grid[i][j];
-                grid[i][j] = 0;
+                if (grid[h][j] == grid[h][j - 1] && grid[h][j])
+                {
+                    grid[h][j - 1] *= 2;
+                    grid[h][j] = 0;
+                    move[j - 1] = false;
+                    break;
+                }
+                else if (!grid[h][j - 1])
+                {
+                    grid[h][j - 1] = grid[h][j];
+                    grid[h][j] = 0;
+                }
             }
         }
     }
@@ -51,20 +53,26 @@ void move_left(Grid &grid)
 
 void move_up(Grid &grid)
 {
-    for (int j = 0; j < grid.size(); j++)
+    for (int h = 0; h < grid.size(); h++)
     {
-        for (int i = grid.size() - 1; i > 0; i--)
+        vector<bool> move(grid.size(), true);
+
+        for (int j = 0; j < grid.size(); j++)
         {
-            if (same_number(grid[i][j], grid[i - 1][j]))
+            for (int i = j; i > 0 && move[i - 1]; i--)
             {
-                grid[i - 1][j] *= 2;
-                grid[i][j] = 0;
-                break;
-            }
-            else if (grid[i - 1][j] == 0)
-            {
-                grid[i - 1][j] = grid[i][j];
-                grid[i][j] = 0;
+                if (grid[i][h] == grid[i - 1][h] && grid[i][h])
+                {
+                    grid[i - 1][h] *= 2;
+                    grid[i][h] = 0;
+                    move[i - 1] = false;
+                    break;
+                }
+                else if (!grid[i - 1][h])
+                {
+                    grid[i - 1][h] = grid[i][h];
+                    grid[i][h] = 0;
+                }
             }
         }
     }
@@ -72,20 +80,26 @@ void move_up(Grid &grid)
 
 void move_right(Grid &grid)
 {
-    for (int i = 0; i < grid.size(); i++)
+    for (int h = 0; h < grid.size(); h++)
     {
-        for (int j = 0; j < grid.size() - 1; j++)
+        vector<bool> move(grid.size(), true);
+
+        for (int i = grid.size() - 1; i >= 0; i--)
         {
-            if (same_number(grid[i][j], grid[i][j + 1]))
+            for (int j = i; j < grid.size() - 1 && move[j + 1]; j++)
             {
-                grid[i][j + 1] *= 2;
-                grid[i][j] = 0;
-                break;
-            }
-            else if (grid[i][j + 1] == 0)
-            {
-                grid[i][j + 1] = grid[i][j];
-                grid[i][j] = 0;
+                if (grid[h][j] == grid[h][j + 1] && grid[h][j])
+                {
+                    grid[h][j + 1] *= 2;
+                    grid[h][j] = 0;
+                    move[j + 1] = false;
+                    break;
+                }
+                else if (!grid[h][j + 1])
+                {
+                    grid[h][j + 1] = grid[h][j];
+                    grid[h][j] = 0;
+                }
             }
         }
     }
@@ -93,19 +107,26 @@ void move_right(Grid &grid)
 
 void move_down(Grid &grid)
 {
-    for (int j = 0; j < grid.size(); j++)
+    for (int h = 0; h < grid.size(); h++)
     {
-        for (int i = 0; i < grid.size() - 1; i++)
+        vector<bool> move(grid.size(), true);
+
+        for (int j = grid.size() - 1; j >= 0; j--)
         {
-            if (same_number(grid[i][j], grid[i + 1][j]))
+            for (int i = j; i < grid.size() - 1 && move[i + 1]; i++)
             {
-                grid[i + 1][j] *= 2;
-                grid[i][j] = 0;
-            }
-            else if (grid[i + 1][j] == 0)
-            {
-                grid[i + 1][j] = grid[i][j];
-                grid[i][j] = 0;
+                if (grid[i][h] == grid[i + 1][h] && grid[i][h])
+                {
+                    grid[i + 1][h] *= 2;
+                    grid[i][h] = 0;
+                    move[i + 1] = false;
+                    break;
+                }
+                else if (!grid[i + 1][h])
+                {
+                    grid[i + 1][h] = grid[i][h];
+                    grid[i][h] = 0;
+                }
             }
         }
     }
