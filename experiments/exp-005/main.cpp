@@ -22,8 +22,9 @@ int main()
     sf::Texture nums_texture;
     nums_texture.loadFromFile("data/2-2048 pieces.png");
 
-    int left = 0, top = 0;
     const int cell_size = 100;
+
+    int left = 0, top = 0;
 
     for (size_t i = 0; i < numbers.size(); i++)
     {
