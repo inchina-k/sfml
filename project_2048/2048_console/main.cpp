@@ -11,7 +11,7 @@ using namespace std;
 
 void count_curr_score(Game &game);
 void switch_command(Game &game, int goal, Renderer &renderer);
-void show_result(Game &game, int goal, Renderer &renderer);
+void show_result(Game &game, int goal, Renderer &renderer, string &command);
 
 int main(int argc, char *argv[])
 {
@@ -91,30 +91,28 @@ void switch_command(Game &game, int goal, Renderer &renderer)
             cout << "allowed commands are {left, up, right, down}" << endl;
         }
 
-        show_result(game, goal, renderer);
+        show_result(game, goal, renderer, command);
     }
 }
 
-void show_result(Game &game, int goal, Renderer &renderer)
+void show_result(Game &game, int goal, Renderer &renderer, string &command)
 {
-    count_curr_score(game);
+    if (command == "left" || command == "up" || command == "right" || command == "down")
+    {
+        count_curr_score(game);
+        game.add_random_number();
+    }
+
     cout << "\ncurrent score: " << game.get_curr_score() << endl;
+    cout << "numbers sum: " << game.get_numbers_sum() << endl;
+    renderer.render();
 
     if (game.get_curr_score() == goal)
     {
-        cout << "numbers sum: " << game.get_numbers_sum() << endl;
-        renderer.render();
         cout << "\nthe goal " << goal << " achieved!" << endl;
         exit(0);
     }
-
-    game.add_random_number();
-
-    cout << "numbers sum: " << game.get_numbers_sum() << endl;
-
-    renderer.render();
-
-    if (game.filled_up())
+    else if (game.filled_up())
     {
         cout << "\ngame lost" << endl;
         exit(0);
