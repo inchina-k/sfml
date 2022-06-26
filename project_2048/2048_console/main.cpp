@@ -44,7 +44,7 @@ int main(int argc, char *argv[])
     }
 
     cout << "---Game 2048---" << endl;
-    cout << "rules: join numbers to get the goal " << goal << endl;
+    cout << "rules: join numbers to achieve the goal " << goal << endl;
     cout << "       allowed commands are {left, up, right, down}" << endl;
 
     Game game(goal);
