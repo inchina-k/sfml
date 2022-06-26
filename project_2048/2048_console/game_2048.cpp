@@ -27,20 +27,23 @@ void Game::add_random_number()
         }
     }
 
-    int num_coords = Random::get(0, int(free_cells.size() - 1));
-
-    int x = free_cells[num_coords].first;
-    int y = free_cells[num_coords].second;
-
-    int probability = Random::get(0, 10);
-
-    if (probability < 3)
+    if (!free_cells.empty())
     {
-        m_puzzle[x][y] = 4;
-    }
-    else
-    {
-        m_puzzle[x][y] = 2;
+        int num_coords = Random::get(0, int(free_cells.size() - 1));
+
+        int x = free_cells[num_coords].first;
+        int y = free_cells[num_coords].second;
+
+        int probability = Random::get(0, 10);
+
+        if (probability < 3)
+        {
+            m_puzzle[x][y] = 4;
+        }
+        else
+        {
+            m_puzzle[x][y] = 2;
+        }
     }
 }
 
@@ -78,6 +81,27 @@ bool Game::filled_up() const
     }
 
     return true;
+}
+
+bool Game::merge_possible() const
+{
+    for (int i = 0; i < int(m_puzzle.size()); i++)
+    {
+        for (int j = 0; j < int(m_puzzle[i].size()); j++)
+        {
+            int curr = m_puzzle[i][j];
+
+            if ((j - 1 >= 0 && curr == m_puzzle[i][j - 1]) ||
+                (i - 1 >= 0 && curr == m_puzzle[i - 1][j]) ||
+                (j + 1 < int(m_puzzle[i].size()) && curr == m_puzzle[i][j + 1]) ||
+                (i + 1 < int(m_puzzle.size()) && curr == m_puzzle[i + 1][j]))
+            {
+                return true;
+            }
+        }
+    }
+
+    return false;
 }
 
 void Game::move_left()

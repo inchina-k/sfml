@@ -110,7 +110,7 @@ void show_result(Game &game, Renderer &renderer)
         cout << "\nthe goal " << game.get_goal() << " achieved!" << endl;
         exit(0);
     }
-    else if (game.filled_up())
+    else if (game.filled_up() && !game.merge_possible())
     {
         cout << "\ngame lost" << endl;
         exit(0);

@@ -25,6 +25,8 @@ public:
 
     bool filled_up() const;
 
+    bool merge_possible() const;
+
     void move_left();
 
     void move_up();
