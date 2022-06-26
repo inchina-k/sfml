@@ -6,7 +6,7 @@ using Random = effolkronium::random_static;
 using namespace std;
 
 Game::Game(int goal)
-    : m_puzzle(4, vector<int>(4)), m_goal(goal), m_curr_score(0)
+    : m_puzzle(4, vector<int>(4)), m_goal(goal), m_curr_score(0), m_game_won(false)
 {
     add_random_number();
     add_random_number();
@@ -54,6 +54,16 @@ int Game::get_at(int r, int c) const
     return m_puzzle[r][c];
 }
 
+int Game::get_goal() const
+{
+    return m_goal;
+}
+
+bool Game::game_won() const
+{
+    return m_game_won;
+}
+
 bool Game::filled_up() const
 {
     for (const auto &row : m_puzzle)
@@ -85,7 +95,14 @@ void Game::move_left()
                     m_puzzle[h][j - 1] *= 2;
                     m_puzzle[h][j] = 0;
                     move[j - 1] = false;
+
                     m_curr_score += m_puzzle[h][j - 1];
+
+                    if (m_puzzle[h][j - 1] == m_goal)
+                    {
+                        m_game_won = true;
+                    }
+
                     break;
                 }
                 else if (!m_puzzle[h][j - 1])
@@ -113,7 +130,14 @@ void Game::move_up()
                     m_puzzle[i - 1][h] *= 2;
                     m_puzzle[i][h] = 0;
                     move[i - 1] = false;
+
                     m_curr_score += m_puzzle[i - 1][h];
+
+                    if (m_puzzle[i - 1][h] == m_goal)
+                    {
+                        m_game_won = true;
+                    }
+
                     break;
                 }
                 else if (!m_puzzle[i - 1][h])
@@ -141,7 +165,13 @@ void Game::move_right()
                     m_puzzle[h][j + 1] *= 2;
                     m_puzzle[h][j] = 0;
                     move[j + 1] = false;
+
                     m_curr_score += m_puzzle[h][j + 1];
+
+                    if (m_puzzle[h][j + 1] == m_goal)
+                    {
+                        m_game_won = true;
+                    }
 
                     break;
                 }
@@ -170,7 +200,13 @@ void Game::move_down()
                     m_puzzle[i + 1][h] *= 2;
                     m_puzzle[i][h] = 0;
                     move[i + 1] = false;
+
                     m_curr_score += m_puzzle[i + 1][h];
+
+                    if (m_puzzle[i + 1][h] == m_goal)
+                    {
+                        m_game_won = true;
+                    }
 
                     break;
                 }

@@ -9,8 +9,8 @@
 
 using namespace std;
 
-void switch_command(Game &game, int goal, Renderer &renderer);
-void show_result(Game &game, int goal, Renderer &renderer, string &command);
+void switch_command(Game &game, Renderer &renderer);
+void show_result(Game &game, Renderer &renderer);
 
 int main(int argc, char *argv[])
 {
@@ -42,21 +42,23 @@ int main(int argc, char *argv[])
         exit(1);
     }
 
-    cout << "---Game 2048---" << endl;
-    cout << "rules: join numbers to achieve the goal " << goal << endl;
-    cout << "       allowed commands are {left, up, right, down}" << endl;
-
     Game game(goal);
     Renderer renderer(game);
 
-    cout << "\ncurrent score: " << game.get_curr_score() << endl;
+    cout << "---Game 2048---" << endl;
+    cout << "rules: join numbers to achieve the goal " << game.get_goal() << endl;
+    cout << "allowed commands: {left, up, right, down} to move the numbers" << endl;
+    cout << "                  {exit} to exit the game" << endl;
+
+    cout << "\ngoal: " << game.get_goal() << endl;
+    cout << "current score: " << game.get_curr_score() << endl;
     renderer.render();
 
     cout << "\ntype command: ";
-    switch_command(game, goal, renderer);
+    switch_command(game, renderer);
 }
 
-void switch_command(Game &game, int goal, Renderer &renderer)
+void switch_command(Game &game, Renderer &renderer)
 {
     string command;
 
@@ -65,47 +67,47 @@ void switch_command(Game &game, int goal, Renderer &renderer)
         if (command == "left")
         {
             game.move_left();
+            game.add_random_number();
         }
         else if (command == "up")
         {
             game.move_up();
+            game.add_random_number();
         }
         else if (command == "right")
         {
             game.move_right();
+            game.add_random_number();
         }
         else if (command == "down")
         {
             game.move_down();
+            game.add_random_number();
         }
         else if (command == "exit")
         {
             cout << "\ngame exited" << endl;
-            exit(1);
+            exit(0);
         }
         else
         {
             cout << "\nunknown command: " << command << endl;
-            cout << "allowed commands are {left, up, right, down}" << endl;
+            cout << "allowed commands are {left, up, right, down, exit}" << endl;
         }
 
-        show_result(game, goal, renderer, command);
+        show_result(game, renderer);
     }
 }
 
-void show_result(Game &game, int goal, Renderer &renderer, string &command)
+void show_result(Game &game, Renderer &renderer)
 {
-    if (command == "left" || command == "up" || command == "right" || command == "down")
-    {
-        game.add_random_number();
-    }
-
-    cout << "\ncurrent score: " << game.get_curr_score() << endl;
+    cout << "\ngoal: " << game.get_goal() << endl;
+    cout << "current score: " << game.get_curr_score() << endl;
     renderer.render();
 
-    if (game.get_curr_score() == goal)
+    if (game.game_won())
     {
-        cout << "\nthe goal " << goal << " achieved!" << endl;
+        cout << "\nthe goal " << game.get_goal() << " achieved!" << endl;
         exit(0);
     }
     else if (game.filled_up())
