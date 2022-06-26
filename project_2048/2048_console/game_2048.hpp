@@ -16,13 +16,7 @@ public:
 
     int get_curr_score() const;
 
-    void set_curr_score(int score);
-
-    std::vector<std::vector<int>> get_puzzle() const;
-
     int get_at(int r, int c) const;
-
-    int get_numbers_sum() const;
 
     bool filled_up() const;
 

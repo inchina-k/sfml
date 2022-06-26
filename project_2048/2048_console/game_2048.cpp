@@ -49,34 +49,9 @@ int Game::get_curr_score() const
     return m_curr_score;
 }
 
-void Game::set_curr_score(int score)
-{
-    m_curr_score = score;
-}
-
-std::vector<std::vector<int>> Game::get_puzzle() const
-{
-    return m_puzzle;
-}
-
 int Game::get_at(int r, int c) const
 {
     return m_puzzle[r][c];
-}
-
-int Game::get_numbers_sum() const
-{
-    int sum = 0;
-
-    for (const auto &row : m_puzzle)
-    {
-        for (auto num : row)
-        {
-            sum += num;
-        }
-    }
-
-    return sum;
 }
 
 bool Game::filled_up() const
@@ -110,6 +85,7 @@ void Game::move_left()
                     m_puzzle[h][j - 1] *= 2;
                     m_puzzle[h][j] = 0;
                     move[j - 1] = false;
+                    m_curr_score += m_puzzle[h][j - 1];
                     break;
                 }
                 else if (!m_puzzle[h][j - 1])
@@ -137,6 +113,7 @@ void Game::move_up()
                     m_puzzle[i - 1][h] *= 2;
                     m_puzzle[i][h] = 0;
                     move[i - 1] = false;
+                    m_curr_score += m_puzzle[i - 1][h];
                     break;
                 }
                 else if (!m_puzzle[i - 1][h])
@@ -164,6 +141,8 @@ void Game::move_right()
                     m_puzzle[h][j + 1] *= 2;
                     m_puzzle[h][j] = 0;
                     move[j + 1] = false;
+                    m_curr_score += m_puzzle[h][j + 1];
+
                     break;
                 }
                 else if (!m_puzzle[h][j + 1])
@@ -191,6 +170,8 @@ void Game::move_down()
                     m_puzzle[i + 1][h] *= 2;
                     m_puzzle[i][h] = 0;
                     move[i + 1] = false;
+                    m_curr_score += m_puzzle[i + 1][h];
+
                     break;
                 }
                 else if (!m_puzzle[i + 1][h])
