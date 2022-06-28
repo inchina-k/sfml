@@ -149,7 +149,7 @@ void Game::move_left()
                     merged[row][col - 1] = true;
 
                     m_curr_score += m_puzzle[row][col - 1];
-                    m_best_scores[m_goal] = max(m_goal, m_curr_score);
+                    m_best_scores[m_goal] = max(m_best_scores[m_goal], m_curr_score);
 
                     if (m_puzzle[row][col - 1] == m_goal)
                     {
@@ -194,7 +194,7 @@ void Game::move_up()
                     merged[row - 1][col] = true;
 
                     m_curr_score += m_puzzle[row - 1][col];
-                    m_best_scores[m_goal] = max(m_goal, m_curr_score);
+                    m_best_scores[m_goal] = max(m_best_scores[m_goal], m_curr_score);
 
                     if (m_puzzle[row - 1][col] == m_goal)
                     {
@@ -239,7 +239,7 @@ void Game::move_right()
                     merged[row][col + 1] = true;
 
                     m_curr_score += m_puzzle[row][col + 1];
-                    m_best_scores[m_goal] = max(m_goal, m_curr_score);
+                    m_best_scores[m_goal] = max(m_best_scores[m_goal], m_curr_score);
 
                     if (m_puzzle[row][col + 1] == m_goal)
                     {
@@ -284,7 +284,7 @@ void Game::move_down()
                     merged[row + 1][col] = true;
 
                     m_curr_score += m_puzzle[row + 1][col];
-                    m_best_scores[m_goal] = max(m_goal, m_curr_score);
+                    m_best_scores[m_goal] = max(m_best_scores[m_goal], m_curr_score);
 
                     if (m_puzzle[row + 1][col] == m_goal)
                     {

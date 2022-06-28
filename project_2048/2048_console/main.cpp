@@ -108,16 +108,16 @@ void show_result(Game &game, Renderer &renderer)
     cout << "best score: " << game.get_best_score(game.get_goal()) << endl;
     renderer.render();
 
+    game.update_best_score();
+
     if (game.game_won())
     {
         cout << "\nthe goal " << game.get_goal() << " achieved!" << endl;
-        game.update_best_score();
         exit(0);
     }
     else if (game.filled_up() && !game.merge_possible())
     {
         cout << "\ngame lost" << endl;
-        game.update_best_score();
         exit(0);
     }
 
