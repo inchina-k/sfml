@@ -13,4 +13,6 @@ public:
     }
 
     void render() const;
+
+    void render_frames();
 };

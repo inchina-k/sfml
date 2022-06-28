@@ -14,7 +14,7 @@ void show_result(Game &game, Renderer &renderer);
 
 int main(int argc, char *argv[])
 {
-    vector<int> nums = {8, 16, 32, 64, 128, 256, 512, 1024, 2048};
+    vector<int> nums = {16, 32, 64, 128, 256, 512, 1024, 2048};
 
     const int default_goal = 16;
 
@@ -32,7 +32,7 @@ int main(int argc, char *argv[])
         if (!(iss >> goal) || iss >> prohibited_symbols || !count(nums.begin(), nums.end(), goal))
         {
             cout << "incorrect goal: " << argv[1] << endl;
-            cout << "allowed goals are {8, 16, 32, 64, 128, 256, 512, 1024, 2048}" << endl;
+            cout << "allowed goals are {16, 32, 64, 128, 256, 512, 1024, 2048}" << endl;
             exit(1);
         }
     }
@@ -49,9 +49,11 @@ int main(int argc, char *argv[])
     cout << "rules: join numbers to achieve the goal " << game.get_goal() << endl;
     cout << "allowed commands: {left, up, right, down} to move the numbers" << endl;
     cout << "                  {exit} to exit the game" << endl;
+    cout << "                  {anim} to see the animation" << endl;
 
     cout << "\ngoal: " << game.get_goal() << endl;
     cout << "current score: " << game.get_curr_score() << endl;
+    cout << "best score: " << game.get_best_score(game.get_goal()) << endl;
     renderer.render();
 
     cout << "\ntype command: ";
@@ -67,32 +69,32 @@ void switch_command(Game &game, Renderer &renderer)
         if (command == "left")
         {
             game.move_left();
-            game.add_random_number();
         }
         else if (command == "up")
         {
             game.move_up();
-            game.add_random_number();
         }
         else if (command == "right")
         {
             game.move_right();
-            game.add_random_number();
         }
         else if (command == "down")
         {
             game.move_down();
-            game.add_random_number();
         }
         else if (command == "exit")
         {
             cout << "\ngame exited" << endl;
             exit(0);
         }
+        else if (command == "anim")
+        {
+            renderer.render_frames();
+        }
         else
         {
             cout << "\nunknown command: " << command << endl;
-            cout << "allowed commands are {left, up, right, down, exit}" << endl;
+            cout << "allowed commands are {left, up, right, down, exit, anim}" << endl;
         }
 
         show_result(game, renderer);
@@ -103,16 +105,19 @@ void show_result(Game &game, Renderer &renderer)
 {
     cout << "\ngoal: " << game.get_goal() << endl;
     cout << "current score: " << game.get_curr_score() << endl;
+    cout << "best score: " << game.get_best_score(game.get_goal()) << endl;
     renderer.render();
 
     if (game.game_won())
     {
         cout << "\nthe goal " << game.get_goal() << " achieved!" << endl;
+        game.update_best_score();
         exit(0);
     }
     else if (game.filled_up() && !game.merge_possible())
     {
         cout << "\ngame lost" << endl;
+        game.update_best_score();
         exit(0);
     }
 

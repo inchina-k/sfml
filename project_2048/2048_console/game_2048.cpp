@@ -1,6 +1,8 @@
 #include "game_2048.hpp"
 #include "../../libs/random.hpp"
 
+#include <fstream>
+
 using Random = effolkronium::random_static;
 
 using namespace std;
@@ -8,6 +10,17 @@ using namespace std;
 Game::Game(int goal)
     : m_puzzle(4, vector<int>(4)), m_goal(goal), m_curr_score(0), m_game_won(false)
 {
+    vector<int> nums = {16, 32, 64, 128, 256, 512, 1024, 2048};
+
+    fstream finp("best.data");
+    int num;
+    for (auto e : nums)
+    {
+        finp >> num;
+        m_best_scores.emplace(e, num);
+    }
+    finp.close();
+
     add_random_number();
     add_random_number();
 }
@@ -47,6 +60,15 @@ void Game::add_random_number()
     }
 }
 
+void Game::update_best_score()
+{
+    ofstream fout("best.data");
+    for (const auto &e : m_best_scores)
+    {
+        fout << e.second << endl;
+    }
+}
+
 int Game::get_curr_score() const
 {
     return m_curr_score;
@@ -60,6 +82,11 @@ int Game::get_at(int r, int c) const
 int Game::get_goal() const
 {
     return m_goal;
+}
+
+int Game::get_best_score(int goal) const
+{
+    return m_best_scores.find(goal)->second;
 }
 
 bool Game::game_won() const
@@ -106,140 +133,192 @@ bool Game::merge_possible() const
 
 void Game::move_left()
 {
-    for (size_t h = 0; h < m_puzzle.size(); h++)
+    for (int step = 0; step < 3; step++)
     {
-        vector<bool> move(m_puzzle.size(), true);
+        bool is_changed = false;
+        vector<vector<bool>> merged(m_puzzle.size(), vector<bool>(m_puzzle.size()));
 
-        for (size_t i = 0; i < m_puzzle.size(); i++)
+        for (int row = 0; row < 4; row++)
         {
-            for (size_t j = i; j > 0 && move[j - 1]; j--)
+            for (int col = 1; col < 4; col++)
             {
-                if (m_puzzle[h][j] == m_puzzle[h][j - 1] && m_puzzle[h][j])
+                if (m_puzzle[row][col] == m_puzzle[row][col - 1] && m_puzzle[row][col] && !merged[row][col - 1])
                 {
-                    m_puzzle[h][j - 1] *= 2;
-                    m_puzzle[h][j] = 0;
-                    move[j - 1] = false;
+                    m_puzzle[row][col - 1] *= 2;
+                    m_puzzle[row][col] = 0;
+                    merged[row][col - 1] = true;
 
-                    m_curr_score += m_puzzle[h][j - 1];
+                    m_curr_score += m_puzzle[row][col - 1];
+                    m_best_scores[m_goal] = max(m_goal, m_curr_score);
 
-                    if (m_puzzle[h][j - 1] == m_goal)
+                    if (m_puzzle[row][col - 1] == m_goal)
                     {
                         m_game_won = true;
                     }
 
-                    break;
+                    is_changed = true;
                 }
-                else if (!m_puzzle[h][j - 1])
+                else if (!m_puzzle[row][col - 1] && m_puzzle[row][col])
                 {
-                    m_puzzle[h][j - 1] = m_puzzle[h][j];
-                    m_puzzle[h][j] = 0;
+                    m_puzzle[row][col - 1] = m_puzzle[row][col];
+                    m_puzzle[row][col] = 0;
+                    is_changed = true;
                 }
             }
+        }
+
+        add_random_number();
+
+        if (is_changed)
+        {
+            m_frames.push(m_puzzle);
         }
     }
 }
 
 void Game::move_up()
 {
-    for (size_t h = 0; h < m_puzzle.size(); h++)
+    for (int step = 0; step < 3; step++)
     {
-        vector<bool> move(m_puzzle.size(), true);
+        bool is_changed = false;
+        vector<vector<bool>> merged(m_puzzle.size(), vector<bool>(m_puzzle.size()));
 
-        for (size_t j = 0; j < m_puzzle.size(); j++)
+        for (int row = 1; row < 4; row++)
         {
-            for (size_t i = j; i > 0 && move[i - 1]; i--)
+            for (int col = 0; col < 4; col++)
             {
-                if (m_puzzle[i][h] == m_puzzle[i - 1][h] && m_puzzle[i][h])
+                if (m_puzzle[row][col] == m_puzzle[row - 1][col] && m_puzzle[row][col] && !merged[row - 1][col])
                 {
-                    m_puzzle[i - 1][h] *= 2;
-                    m_puzzle[i][h] = 0;
-                    move[i - 1] = false;
+                    m_puzzle[row - 1][col] *= 2;
+                    m_puzzle[row][col] = 0;
+                    merged[row - 1][col] = true;
 
-                    m_curr_score += m_puzzle[i - 1][h];
+                    m_curr_score += m_puzzle[row - 1][col];
+                    m_best_scores[m_goal] = max(m_goal, m_curr_score);
 
-                    if (m_puzzle[i - 1][h] == m_goal)
+                    if (m_puzzle[row - 1][col] == m_goal)
                     {
                         m_game_won = true;
                     }
 
-                    break;
+                    is_changed = true;
                 }
-                else if (!m_puzzle[i - 1][h])
+                else if (!m_puzzle[row - 1][col] && m_puzzle[row][col])
                 {
-                    m_puzzle[i - 1][h] = m_puzzle[i][h];
-                    m_puzzle[i][h] = 0;
+                    m_puzzle[row - 1][col] = m_puzzle[row][col];
+                    m_puzzle[row][col] = 0;
+                    is_changed = true;
                 }
             }
+        }
+
+        add_random_number();
+
+        if (is_changed)
+        {
+            m_frames.push(m_puzzle);
         }
     }
 }
 
 void Game::move_right()
 {
-    for (size_t h = 0; h < m_puzzle.size(); h++)
+    for (int step = 0; step < 3; step++)
     {
-        vector<bool> move(m_puzzle.size(), true);
+        bool is_changed = false;
+        vector<vector<bool>> merged(m_puzzle.size(), vector<bool>(m_puzzle.size()));
 
-        for (int i = m_puzzle.size() - 1; i >= 0; i--)
+        for (int row = 0; row < 4; row++)
         {
-            for (size_t j = i; j < m_puzzle.size() - 1 && move[j + 1]; j++)
+            for (int col = 2; col >= 0; col--)
             {
-                if (m_puzzle[h][j] == m_puzzle[h][j + 1] && m_puzzle[h][j])
+                if (m_puzzle[row][col] == m_puzzle[row][col + 1] && m_puzzle[row][col] && !merged[row][col + 1])
                 {
-                    m_puzzle[h][j + 1] *= 2;
-                    m_puzzle[h][j] = 0;
-                    move[j + 1] = false;
+                    m_puzzle[row][col + 1] *= 2;
+                    m_puzzle[row][col] = 0;
+                    merged[row][col + 1] = true;
 
-                    m_curr_score += m_puzzle[h][j + 1];
+                    m_curr_score += m_puzzle[row][col + 1];
+                    m_best_scores[m_goal] = max(m_goal, m_curr_score);
 
-                    if (m_puzzle[h][j + 1] == m_goal)
+                    if (m_puzzle[row][col + 1] == m_goal)
                     {
                         m_game_won = true;
                     }
 
-                    break;
+                    is_changed = true;
                 }
-                else if (!m_puzzle[h][j + 1])
+                else if (!m_puzzle[row][col + 1] && m_puzzle[row][col])
                 {
-                    m_puzzle[h][j + 1] = m_puzzle[h][j];
-                    m_puzzle[h][j] = 0;
+                    m_puzzle[row][col + 1] = m_puzzle[row][col];
+                    m_puzzle[row][col] = 0;
+                    is_changed = true;
                 }
             }
+        }
+
+        add_random_number();
+
+        if (is_changed)
+        {
+            m_frames.push(m_puzzle);
         }
     }
 }
 
 void Game::move_down()
 {
-    for (size_t h = 0; h < m_puzzle.size(); h++)
+    for (int step = 0; step < 3; step++)
     {
-        vector<bool> move(m_puzzle.size(), true);
+        bool is_changed = false;
+        vector<vector<bool>> merged(m_puzzle.size(), vector<bool>(m_puzzle.size()));
 
-        for (int j = m_puzzle.size() - 1; j >= 0; j--)
+        for (int row = 2; row >= 0; row--)
         {
-            for (size_t i = j; i < m_puzzle.size() - 1 && move[i + 1]; i++)
+            for (int col = 0; col < 4; col++)
             {
-                if (m_puzzle[i][h] == m_puzzle[i + 1][h] && m_puzzle[i][h])
+                if (m_puzzle[row][col] == m_puzzle[row + 1][col] && m_puzzle[row][col] && !merged[row + 1][col])
                 {
-                    m_puzzle[i + 1][h] *= 2;
-                    m_puzzle[i][h] = 0;
-                    move[i + 1] = false;
+                    m_puzzle[row + 1][col] *= 2;
+                    m_puzzle[row][col] = 0;
+                    merged[row + 1][col] = true;
 
-                    m_curr_score += m_puzzle[i + 1][h];
+                    m_curr_score += m_puzzle[row + 1][col];
+                    m_best_scores[m_goal] = max(m_goal, m_curr_score);
 
-                    if (m_puzzle[i + 1][h] == m_goal)
+                    if (m_puzzle[row + 1][col] == m_goal)
                     {
                         m_game_won = true;
                     }
 
-                    break;
+                    is_changed = true;
                 }
-                else if (!m_puzzle[i + 1][h])
+                else if (!m_puzzle[row + 1][col] && m_puzzle[row][col])
                 {
-                    m_puzzle[i + 1][h] = m_puzzle[i][h];
-                    m_puzzle[i][h] = 0;
+                    m_puzzle[row + 1][col] = m_puzzle[row][col];
+                    m_puzzle[row][col] = 0;
+                    is_changed = true;
                 }
             }
         }
+
+        add_random_number();
+
+        if (is_changed)
+        {
+            m_frames.push(m_puzzle);
+        }
     }
+}
+
+vector<vector<int>> Game::pop_frame()
+{
+    vector<vector<int>> curr_frame = m_frames.front();
+    m_frames.pop();
+    return curr_frame;
+}
+
+bool Game::frames_empty()
+{
+    return m_frames.empty();
 }
