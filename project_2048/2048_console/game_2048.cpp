@@ -167,13 +167,13 @@ void Game::move_left()
             }
         }
 
-        add_random_number();
-
         if (is_changed)
         {
             m_frames.push(m_puzzle);
         }
     }
+
+    add_random_number();
 }
 
 void Game::move_up()
@@ -212,13 +212,13 @@ void Game::move_up()
             }
         }
 
-        add_random_number();
-
         if (is_changed)
         {
             m_frames.push(m_puzzle);
         }
     }
+
+    add_random_number();
 }
 
 void Game::move_right()
@@ -257,13 +257,13 @@ void Game::move_right()
             }
         }
 
-        add_random_number();
-
         if (is_changed)
         {
             m_frames.push(m_puzzle);
         }
     }
+
+    add_random_number();
 }
 
 void Game::move_down()
@@ -302,13 +302,13 @@ void Game::move_down()
             }
         }
 
-        add_random_number();
-
         if (is_changed)
         {
             m_frames.push(m_puzzle);
         }
     }
+
+    add_random_number();
 }
 
 vector<vector<int>> Game::pop_frame()
