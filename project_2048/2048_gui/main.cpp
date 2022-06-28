@@ -1,7 +1,5 @@
 #include <SFML/Graphics.hpp>
 
-#include <vector>
-
 #include "game_2048.hpp"
 #include "renderer.hpp"
 #include "field.hpp"
@@ -20,7 +18,7 @@ int main()
 
     vector<int> goals = {16, 32, 64, 128, 256, 512, 1024, 2048};
 
-    const int default_goal = 16;
+    const int default_goal = 32;
     int goal = default_goal;
 
     const int n_of_cells = 4;
@@ -52,7 +50,7 @@ int main()
     Message message_title(text_default, font);
     message_title.set_properties(text_size, text_style, text_fill, text_outline, outline_thickness);
 
-    string str_goal = "Goal:\n" + to_string(goal);
+    string str_goal = "Goal:\n" + to_string(game.get_goal());
     Message message_goal(str_goal, font);
     message_goal.set_properties(text_size, text_style, text_fill, text_outline, outline_thickness);
 
@@ -60,6 +58,11 @@ int main()
     string curr_score = text_score + to_string(game.get_curr_score());
     Message message_score(curr_score, font);
     message_score.set_properties(text_size, text_style, text_fill, text_outline, outline_thickness);
+
+    string text_best_score = "Best:\n";
+    string best_score = text_best_score + to_string(game.get_best_score(game.get_goal()));
+    Message message_best_score(best_score, font);
+    message_best_score.set_properties(text_size, text_style, text_fill, text_outline, outline_thickness);
 
     while (window.isOpen())
     {
@@ -76,13 +79,19 @@ int main()
 
             curr_score = text_score + to_string(game.get_curr_score());
             message_score.set_str(curr_score);
-            message_score.set_pos(x + cell_size * n_of_cells + 200, window.getSize().y / 2);
+            message_score.set_pos(x + cell_size * n_of_cells + 200, window.getSize().y / 2 - 100);
+
+            best_score = text_best_score + to_string(game.get_best_score(game.get_goal()));
+            message_best_score.set_str(best_score);
+            message_best_score.set_pos(x + cell_size * n_of_cells + 200, window.getSize().y / 2 + 100);
 
             bool won = game.game_won();
             bool lost = game.filled_up() && !game.merge_possible();
 
             double coord_x = window.getSize().x / 2;
             double coord_y = y - 100;
+
+            game.update_best_score();
 
             if (!won && !(lost))
             {
@@ -111,6 +120,8 @@ int main()
 
         message_score.show_message(window);
 
+        message_best_score.show_message(window);
+
         message_title.show_message(window);
 
         window.display();
@@ -122,21 +133,17 @@ void switch_command(Game &game)
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left))
     {
         game.move_left();
-        game.add_random_number();
     }
     else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up))
     {
         game.move_up();
-        game.add_random_number();
     }
     else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right))
     {
         game.move_right();
-        game.add_random_number();
     }
     else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down))
     {
         game.move_down();
-        game.add_random_number();
     }
 }
