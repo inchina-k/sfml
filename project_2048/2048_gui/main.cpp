@@ -10,6 +10,7 @@ using namespace std;
 using Grid = vector<vector<int>>;
 
 void switch_command(Game &game);
+void change_goal(int &goal, vector<int> &goals, int &goal_index, string &str_goal, Message &message_goal);
 
 int main()
 {
@@ -17,6 +18,7 @@ int main()
     window.setVerticalSyncEnabled(true);
 
     vector<int> goals = {16, 32, 64, 128, 256, 512, 1024, 2048};
+    int goal_index = 0;
 
     const int default_goal = 16;
     int goal = default_goal;
@@ -38,7 +40,7 @@ int main()
     sf::Font font;
     font.loadFromFile("data/PressStart2P-Regular.ttf");
 
-    const int text_size = 48;
+    const int text_size = 44;
     sf::Text::Style text_style(sf::Text::Style::Bold);
     sf::Color text_fill(sf::Color::Cyan);
     sf::Color text_outline(209, 207, 207);
@@ -74,40 +76,46 @@ int main()
             {
                 window.close();
             }
+            else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Tab))
+            {
+                renderer.restart_game(goal, window);
+                message_title.set_str(text_default);
+            }
 
-            message_goal.set_pos(x - 200, window.getSize().y / 2);
+            message_goal.set_pos(x / 2, window.getSize().y / 2);
 
             curr_score = text_score + to_string(game.get_curr_score());
             message_score.set_str(curr_score);
-            message_score.set_pos(x + cell_size * n_of_cells + 200, window.getSize().y / 2 - 100);
+            message_score.set_pos(window.getSize().x - x / 2, window.getSize().y / 2 - 100);
 
             best_score = text_best_score + to_string(game.get_best_score(game.get_goal()));
             message_best_score.set_str(best_score);
-            message_best_score.set_pos(x + cell_size * n_of_cells + 200, window.getSize().y / 2 + 100);
+            message_best_score.set_pos(window.getSize().x - x / 2, window.getSize().y / 2 + 100);
 
             bool won = game.game_won();
             bool lost = game.filled_up() && !game.merge_possible();
 
             double coord_x = window.getSize().x / 2;
-            double coord_y = y - 100;
+            double coord_y = y / 2;
 
             game.update_best_score();
 
             if (!won && !(lost))
             {
-                message_title.set_pos(coord_x, coord_y);
                 switch_command(game);
             }
             else if (won)
             {
                 message_title.set_str(text_won);
-                message_title.set_pos(coord_x, coord_y);
+                change_goal(goal, goals, goal_index, str_goal, message_goal);
             }
             else
             {
                 message_title.set_str(text_lost);
-                message_title.set_pos(coord_x, coord_y);
+                change_goal(goal, goals, goal_index, str_goal, message_goal);
             }
+
+            message_title.set_pos(coord_x, coord_y);
         }
 
         window.clear();
@@ -146,4 +154,19 @@ void switch_command(Game &game)
     {
         game.move_down();
     }
+}
+
+void change_goal(int &goal, vector<int> &goals, int &goal_index, string &str_goal, Message &message_goal)
+{
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::PageUp) && goal_index < int(goals.size() - 1))
+    {
+        goal = goals[++goal_index];
+    }
+    else if (sf::Keyboard::isKeyPressed(sf::Keyboard::PageDown) && goal_index > 0)
+    {
+        goal = goals[--goal_index];
+    }
+
+    str_goal = "Goal:\n\n" + to_string(goal);
+    message_goal.set_str(str_goal);
 }

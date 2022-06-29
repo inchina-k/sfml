@@ -28,6 +28,14 @@ public:
 
     int get_best_score(int goal) const;
 
+    void update_puzzle();
+
+    void set_goal(int goal);
+
+    void set_curr_score(int curr_score);
+
+    void set_win_status(bool game_won);
+
     bool game_won() const;
 
     bool filled_up() const;

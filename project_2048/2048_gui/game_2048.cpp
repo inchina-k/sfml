@@ -89,6 +89,32 @@ int Game::get_best_score(int goal) const
     return m_best_scores.find(goal)->second;
 }
 
+void Game::update_puzzle()
+{
+    for (auto &row : m_puzzle)
+    {
+        for (auto &num : row)
+        {
+            num = 0;
+        }
+    }
+}
+
+void Game::set_goal(int goal)
+{
+    m_goal = goal;
+}
+
+void Game::set_curr_score(int curr_score)
+{
+    m_curr_score = curr_score;
+}
+
+void Game::set_win_status(bool game_won)
+{
+    m_game_won = game_won;
+}
+
 bool Game::game_won() const
 {
     return m_game_won;

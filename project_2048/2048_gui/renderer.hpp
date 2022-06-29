@@ -20,4 +20,6 @@ public:
     Renderer(Game &game, sf::Texture nums_texture, int num_of_cells, int x, int y, int cell_size);
 
     void render(sf::RenderWindow &window);
+
+    void restart_game(int goal, sf::RenderWindow &window);
 };
