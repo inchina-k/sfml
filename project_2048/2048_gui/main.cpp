@@ -158,7 +158,7 @@ int main()
             message_title.set_pos(coord_x, coord_y);
         }
 
-        window.clear();
+        window.clear(sf::Color(3, 19, 43));
 
         field.draw_field(window);
 
