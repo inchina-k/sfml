@@ -5,7 +5,7 @@ using namespace std;
 
 int main()
 {
-    vector<vector<int>> puzzle = {{0, 0, 4, 2}, {0, 8, 0, 0}, {0, 64, 0, 32}, {0, 4, 2, 2}};
+    vector<vector<int>> puzzle = {{0, 0, 4, 2}, {0, 8, 0, 0}, {0, 64, 0, 32}, {0, 2, 2, 4}};
 
     vector<vector<bool>> merged(puzzle.size(), vector<bool>(puzzle.size()));
 
@@ -17,7 +17,7 @@ int main()
         {
             for (int col = 1; col < 4; col++)
             {
-                if (puzzle[row][col] == puzzle[row][col - 1] && puzzle[row][col] && !merged[row][col])
+                if (puzzle[row][col] == puzzle[row][col - 1] && puzzle[row][col] && !merged[row][col - 1] && !merged[row][col])
                 {
                     puzzle[row][col - 1] *= 2;
                     puzzle[row][col] = 0;
