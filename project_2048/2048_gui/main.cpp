@@ -1,4 +1,5 @@
 #include <SFML/Graphics.hpp>
+#include <SFML/Audio.hpp>
 
 #include "game_2048.hpp"
 #include "renderer.hpp"
@@ -9,7 +10,7 @@ using namespace std;
 
 using Grid = vector<vector<int>>;
 
-void switch_command(Game &game);
+void switch_command(Game &game, sf::Sound &sound_cell_moved);
 void change_goal(int &goal, vector<int> &goals, int &goal_index, string &str_goal, Message &message_goal);
 
 int main()
@@ -66,6 +67,24 @@ int main()
     Message message_best_score(best_score, font);
     message_best_score.set_properties(text_size, text_style, text_fill, text_outline, outline_thickness);
 
+    sf::SoundBuffer buff_cell_moved, buff_game_won, buff_game_lost;
+
+    if (!buff_cell_moved.loadFromFile("data/pop.wav") || !buff_game_won.loadFromFile("data/game_won.wav") || !buff_game_lost.loadFromFile("data/game_lost.wav"))
+    {
+        exit(1);
+    }
+
+    sf::Sound sound_cell_moved, sound_game_won, sound_game_lost;
+
+    sound_cell_moved.setBuffer(buff_cell_moved);
+    sound_game_won.setBuffer(buff_game_won);
+    sound_game_lost.setBuffer(buff_game_lost);
+
+    sound_game_won.setLoop(false);
+    sound_game_lost.setLoop(false);
+
+    bool play_sound = true;
+
     while (window.isOpen())
     {
         sf::Event event;
@@ -80,6 +99,7 @@ int main()
             {
                 renderer.restart_game(goal, window);
                 message_title.set_str(text_default);
+                play_sound = true;
             }
 
             message_goal.set_pos(x / 2, window.getSize().y / 2);
@@ -108,17 +128,31 @@ int main()
                     game.set_goal(goal);
                 }
 
-                switch_command(game);
+                switch_command(game, sound_cell_moved);
             }
             else if (won)
             {
                 message_title.set_str(text_won);
                 change_goal(goal, goals, goal_index, str_goal, message_goal);
+
+                if (play_sound)
+                {
+                    sound_game_won.play();
+                }
+
+                play_sound = false;
             }
             else
             {
                 message_title.set_str(text_lost);
                 change_goal(goal, goals, goal_index, str_goal, message_goal);
+
+                if (play_sound)
+                {
+                    sound_game_lost.play();
+                }
+
+                play_sound = false;
             }
 
             message_title.set_pos(coord_x, coord_y);
@@ -142,23 +176,27 @@ int main()
     }
 }
 
-void switch_command(Game &game)
+void switch_command(Game &game, sf::Sound &sound_cell_moved)
 {
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left))
     {
         game.move_left();
+        sound_cell_moved.play();
     }
     else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up))
     {
         game.move_up();
+        sound_cell_moved.play();
     }
     else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right))
     {
         game.move_right();
+        sound_cell_moved.play();
     }
     else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down))
     {
         game.move_down();
+        sound_cell_moved.play();
     }
 }
 
