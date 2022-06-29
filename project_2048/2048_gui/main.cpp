@@ -18,7 +18,7 @@ int main()
 
     vector<int> goals = {16, 32, 64, 128, 256, 512, 1024, 2048};
 
-    const int default_goal = 32;
+    const int default_goal = 16;
     int goal = default_goal;
 
     const int n_of_cells = 4;
@@ -30,15 +30,15 @@ int main()
     Field field(x, y, n_of_cells, cell_size);
 
     sf::Texture nums_texture;
-    nums_texture.loadFromFile("data/2-2048 pieces.png");
+    nums_texture.loadFromFile("data/2048 pixel pieces.png");
 
     Game game(goal);
     Renderer renderer(game, nums_texture, x, y, n_of_cells, cell_size);
 
     sf::Font font;
-    font.loadFromFile("data/AzeretMono-Regular.ttf");
+    font.loadFromFile("data/PressStart2P-Regular.ttf");
 
-    const int text_size = 70;
+    const int text_size = 48;
     sf::Text::Style text_style(sf::Text::Style::Bold);
     sf::Color text_fill(sf::Color::Cyan);
     sf::Color text_outline(209, 207, 207);
@@ -50,16 +50,16 @@ int main()
     Message message_title(text_default, font);
     message_title.set_properties(text_size, text_style, text_fill, text_outline, outline_thickness);
 
-    string str_goal = "Goal:\n" + to_string(game.get_goal());
+    string str_goal = "Goal:\n\n" + to_string(game.get_goal());
     Message message_goal(str_goal, font);
     message_goal.set_properties(text_size, text_style, text_fill, text_outline, outline_thickness);
 
-    string text_score = "Score:\n";
+    string text_score = "Score:\n\n";
     string curr_score = text_score + to_string(game.get_curr_score());
     Message message_score(curr_score, font);
     message_score.set_properties(text_size, text_style, text_fill, text_outline, outline_thickness);
 
-    string text_best_score = "Best:\n";
+    string text_best_score = "Best:\n\n";
     string best_score = text_best_score + to_string(game.get_best_score(game.get_goal()));
     Message message_best_score(best_score, font);
     message_best_score.set_properties(text_size, text_style, text_fill, text_outline, outline_thickness);

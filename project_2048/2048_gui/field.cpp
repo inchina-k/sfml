@@ -3,9 +3,9 @@
 Field::Field(int x, int y, int num_of_cells, int cell_size)
     : m_x(x), m_y(y), m_num_of_cells(num_of_cells), m_cell(sf::Vector2f(cell_size, cell_size))
 {
-    m_cell.setFillColor(sf::Color(163, 160, 160));
+    m_cell.setFillColor(sf::Color(189, 203, 219));
     m_cell.setOutlineThickness(1);
-    m_cell.setOutlineColor(sf::Color(209, 207, 207));
+    m_cell.setOutlineColor(sf::Color(225, 237, 252));
 }
 
 void Field::draw_field(sf::RenderWindow &window)
