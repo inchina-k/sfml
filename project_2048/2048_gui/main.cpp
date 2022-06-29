@@ -102,6 +102,12 @@ int main()
 
             if (!won && !(lost))
             {
+                if (!game.get_curr_score())
+                {
+                    change_goal(goal, goals, goal_index, str_goal, message_goal);
+                    game.set_goal(goal);
+                }
+
                 switch_command(game);
             }
             else if (won)
