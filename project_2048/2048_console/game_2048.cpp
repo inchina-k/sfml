@@ -133,16 +133,17 @@ bool Game::merge_possible() const
 
 void Game::move_left()
 {
+    vector<vector<bool>> merged(m_puzzle.size(), vector<bool>(m_puzzle.size()));
+
     for (int step = 0; step < 3; step++)
     {
         bool is_changed = false;
-        vector<vector<bool>> merged(m_puzzle.size(), vector<bool>(m_puzzle.size()));
 
         for (int row = 0; row < 4; row++)
         {
             for (int col = 1; col < 4; col++)
             {
-                if (m_puzzle[row][col] == m_puzzle[row][col - 1] && m_puzzle[row][col] && !merged[row][col - 1])
+                if (m_puzzle[row][col] == m_puzzle[row][col - 1] && m_puzzle[row][col] && !merged[row][col])
                 {
                     m_puzzle[row][col - 1] *= 2;
                     m_puzzle[row][col] = 0;
@@ -178,16 +179,17 @@ void Game::move_left()
 
 void Game::move_up()
 {
+    vector<vector<bool>> merged(m_puzzle.size(), vector<bool>(m_puzzle.size()));
+
     for (int step = 0; step < 3; step++)
     {
         bool is_changed = false;
-        vector<vector<bool>> merged(m_puzzle.size(), vector<bool>(m_puzzle.size()));
 
         for (int row = 1; row < 4; row++)
         {
             for (int col = 0; col < 4; col++)
             {
-                if (m_puzzle[row][col] == m_puzzle[row - 1][col] && m_puzzle[row][col] && !merged[row - 1][col])
+                if (m_puzzle[row][col] == m_puzzle[row - 1][col] && m_puzzle[row][col] && !merged[row][col])
                 {
                     m_puzzle[row - 1][col] *= 2;
                     m_puzzle[row][col] = 0;
@@ -223,16 +225,17 @@ void Game::move_up()
 
 void Game::move_right()
 {
+    vector<vector<bool>> merged(m_puzzle.size(), vector<bool>(m_puzzle.size()));
+
     for (int step = 0; step < 3; step++)
     {
         bool is_changed = false;
-        vector<vector<bool>> merged(m_puzzle.size(), vector<bool>(m_puzzle.size()));
 
         for (int row = 0; row < 4; row++)
         {
             for (int col = 2; col >= 0; col--)
             {
-                if (m_puzzle[row][col] == m_puzzle[row][col + 1] && m_puzzle[row][col] && !merged[row][col + 1])
+                if (m_puzzle[row][col] == m_puzzle[row][col + 1] && m_puzzle[row][col] && !merged[row][col])
                 {
                     m_puzzle[row][col + 1] *= 2;
                     m_puzzle[row][col] = 0;
@@ -268,16 +271,17 @@ void Game::move_right()
 
 void Game::move_down()
 {
+    vector<vector<bool>> merged(m_puzzle.size(), vector<bool>(m_puzzle.size()));
+
     for (int step = 0; step < 3; step++)
     {
         bool is_changed = false;
-        vector<vector<bool>> merged(m_puzzle.size(), vector<bool>(m_puzzle.size()));
 
         for (int row = 2; row >= 0; row--)
         {
             for (int col = 0; col < 4; col++)
             {
-                if (m_puzzle[row][col] == m_puzzle[row + 1][col] && m_puzzle[row][col] && !merged[row + 1][col])
+                if (m_puzzle[row][col] == m_puzzle[row + 1][col] && m_puzzle[row][col] && !merged[row][col])
                 {
                     m_puzzle[row + 1][col] *= 2;
                     m_puzzle[row][col] = 0;
