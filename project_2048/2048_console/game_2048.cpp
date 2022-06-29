@@ -143,7 +143,7 @@ void Game::move_left()
         {
             for (int col = 1; col < 4; col++)
             {
-                if (m_puzzle[row][col] == m_puzzle[row][col - 1] && m_puzzle[row][col] && !merged[row][col])
+                if (m_puzzle[row][col] == m_puzzle[row][col - 1] && m_puzzle[row][col] && !merged[row][col - 1] && !merged[row][col])
                 {
                     m_puzzle[row][col - 1] *= 2;
                     m_puzzle[row][col] = 0;
@@ -189,7 +189,7 @@ void Game::move_up()
         {
             for (int col = 0; col < 4; col++)
             {
-                if (m_puzzle[row][col] == m_puzzle[row - 1][col] && m_puzzle[row][col] && !merged[row][col])
+                if (m_puzzle[row][col] == m_puzzle[row - 1][col] && m_puzzle[row][col] && !merged[row - 1][col] && !merged[row][col])
                 {
                     m_puzzle[row - 1][col] *= 2;
                     m_puzzle[row][col] = 0;
@@ -235,7 +235,7 @@ void Game::move_right()
         {
             for (int col = 2; col >= 0; col--)
             {
-                if (m_puzzle[row][col] == m_puzzle[row][col + 1] && m_puzzle[row][col] && !merged[row][col])
+                if (m_puzzle[row][col] == m_puzzle[row][col + 1] && m_puzzle[row][col] && !merged[row][col + 1] && !merged[row][col])
                 {
                     m_puzzle[row][col + 1] *= 2;
                     m_puzzle[row][col] = 0;
@@ -281,7 +281,7 @@ void Game::move_down()
         {
             for (int col = 0; col < 4; col++)
             {
-                if (m_puzzle[row][col] == m_puzzle[row + 1][col] && m_puzzle[row][col] && !merged[row][col])
+                if (m_puzzle[row][col] == m_puzzle[row + 1][col] && m_puzzle[row][col] && !merged[row + 1][col] && !merged[row][col])
                 {
                     m_puzzle[row + 1][col] *= 2;
                     m_puzzle[row][col] = 0;
