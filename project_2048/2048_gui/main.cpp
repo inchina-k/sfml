@@ -15,8 +15,12 @@ void change_goal(int &goal, vector<int> &goals, int &goal_index, string &str_goa
 
 int main()
 {
-    sf::RenderWindow window(sf::VideoMode(1200, 900), "SFML app");
+    sf::RenderWindow window(sf::VideoMode::getDesktopMode(), "SFML app", sf::Style::Fullscreen);
     window.setVerticalSyncEnabled(true);
+
+    const sf::Time frames_per_sec = sf::seconds(0.1f);
+    sf::Time total_time = sf::Time::Zero;
+    sf::Clock clock;
 
     vector<int> goals = {16, 32, 64, 128, 256, 512, 1024, 2048};
     int goal_index = 0;
@@ -87,6 +91,8 @@ int main()
 
     while (window.isOpen())
     {
+        total_time += clock.restart();
+
         sf::Event event;
 
         while (window.pollEvent(event))
@@ -158,42 +164,47 @@ int main()
             message_title.set_pos(coord_x, coord_y);
         }
 
-        window.clear(sf::Color(3, 19, 43));
+        if (total_time > frames_per_sec)
+        {
+            total_time -= frames_per_sec;
 
-        field.draw_field(window);
+            window.clear(sf::Color(3, 19, 43));
 
-        renderer.render(window);
+            field.draw_field(window);
 
-        message_goal.show_message(window);
+            renderer.render(window);
 
-        message_score.show_message(window);
+            message_goal.show_message(window);
 
-        message_best_score.show_message(window);
+            message_score.show_message(window);
 
-        message_title.show_message(window);
+            message_best_score.show_message(window);
 
-        window.display();
+            message_title.show_message(window);
+
+            window.display();
+        }
     }
 }
 
 void switch_command(Game &game, sf::Sound &sound_cell_moved)
 {
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left))
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left) && game.frames_empty())
     {
         game.move_left();
         sound_cell_moved.play();
     }
-    else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up))
+    else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up) && game.frames_empty())
     {
         game.move_up();
         sound_cell_moved.play();
     }
-    else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right))
+    else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right) && game.frames_empty())
     {
         game.move_right();
         sound_cell_moved.play();
     }
-    else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down))
+    else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down) && game.frames_empty())
     {
         game.move_down();
         sound_cell_moved.play();

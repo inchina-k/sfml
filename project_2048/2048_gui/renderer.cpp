@@ -20,13 +20,15 @@ Renderer::Renderer(Game &game, sf::Texture nums_texture, int x, int y, int num_o
 
 void Renderer::render(sf::RenderWindow &window)
 {
+    vector<vector<int>> curr_frame = m_game.get_next_frame();
+
     sf::Vector2f pos(m_x, m_y);
 
     for (int i = 0; i < m_num_of_cells; i++)
     {
         for (int j = 0; j < m_num_of_cells; j++)
         {
-            int num = m_game.get_at(i, j);
+            int num = curr_frame[i][j];
 
             m_images[num].setPosition(pos.x, pos.y);
             window.draw(m_images[num]);

@@ -352,3 +352,13 @@ bool Game::frames_empty()
 {
     return m_frames.empty();
 }
+
+std::vector<std::vector<int>> Game::get_next_frame()
+{
+    if (!frames_empty())
+    {
+        return pop_frame();
+    }
+
+    return m_puzzle;
+}

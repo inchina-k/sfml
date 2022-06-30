@@ -53,4 +53,6 @@ public:
     bool frames_empty();
 
     std::vector<std::vector<int>> pop_frame();
+
+    std::vector<std::vector<int>> get_next_frame();
 };
