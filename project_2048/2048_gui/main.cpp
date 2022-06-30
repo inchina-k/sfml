@@ -29,7 +29,8 @@ int main()
     int goal = default_goal;
 
     const int n_of_cells = 4;
-    const int cell_size = 100;
+    const int image_size = 100;
+    const double cell_size = min(window.getSize().x, window.getSize().y) / (2 * n_of_cells);
 
     double x = window.getSize().x / 2 - cell_size * 2;
     double y = window.getSize().y / 2 - cell_size * 2;
@@ -40,12 +41,12 @@ int main()
     nums_texture.loadFromFile("data/2048 pixel pieces.png");
 
     Game game(goal);
-    Renderer renderer(game, nums_texture, x, y, n_of_cells, cell_size);
+    Renderer renderer(game, nums_texture, x, y, n_of_cells, cell_size, image_size);
 
     sf::Font font;
     font.loadFromFile("data/PressStart2P-Regular.ttf");
 
-    const int text_size = 44;
+    const int text_size = cell_size / 2.5;
     sf::Text::Style text_style(sf::Text::Style::Bold);
     sf::Color text_fill(sf::Color::Cyan);
     sf::Color text_outline(209, 207, 207);

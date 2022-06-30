@@ -1,6 +1,6 @@
 #include "field.hpp"
 
-Field::Field(int x, int y, int num_of_cells, int cell_size)
+Field::Field(int x, int y, int num_of_cells, double cell_size)
     : m_x(x), m_y(y), m_num_of_cells(num_of_cells), m_cell(sf::Vector2f(cell_size, cell_size))
 {
     m_cell.setFillColor(sf::Color(189, 203, 219));

@@ -10,7 +10,7 @@ class Field
     sf::RectangleShape m_cell;
 
 public:
-    Field(int num_of_cells, int x, int y, int cell_size);
+    Field(int num_of_cells, int x, int y, double cell_size);
 
     void draw_field(sf::RenderWindow &window);
 };

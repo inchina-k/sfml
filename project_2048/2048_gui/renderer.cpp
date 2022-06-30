@@ -4,8 +4,8 @@
 
 using namespace std;
 
-Renderer::Renderer(Game &game, sf::Texture nums_texture, int x, int y, int num_of_cells, int cell_size)
-    : m_game(game), m_texture(nums_texture), m_x(x), m_y(y), m_num_of_cells(num_of_cells), m_cell_size(cell_size)
+Renderer::Renderer(Game &game, sf::Texture nums_texture, int x, int y, int num_of_cells, double cell_size, int image_size)
+    : m_game(game), m_texture(nums_texture), m_x(x), m_y(y), m_num_of_cells(num_of_cells), m_cell_size(cell_size), m_image_size(image_size)
 {
     vector<int> nums = {2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048};
 
@@ -13,8 +13,13 @@ Renderer::Renderer(Game &game, sf::Texture nums_texture, int x, int y, int num_o
 
     for (size_t i = 0; i < nums.size(); i++)
     {
-        m_images.emplace(nums[i], sf::Sprite(m_texture, sf::IntRect(left, top, m_cell_size, m_cell_size)));
-        left += m_cell_size;
+        double sc = m_cell_size / m_image_size;
+
+        sf::Sprite sprite(m_texture, sf::IntRect(left, top, m_image_size, m_image_size));
+        sprite.scale(sc, sc);
+        m_images.emplace(nums[i], sprite);
+
+        left += m_image_size;
     }
 }
 
