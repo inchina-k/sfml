@@ -4,14 +4,17 @@
 #include <map>
 #include <queue>
 
+using Puzzle = std::vector<std::vector<int>>;
+
 class Game
 {
-    std::vector<std::vector<int>> m_puzzle;
+    Puzzle m_puzzle;
     int m_goal;
     int m_curr_score;
+    bool m_game_started;
     bool m_game_won;
     std::map<int, int> m_best_scores;
-    std::queue<std::vector<std::vector<int>>> m_frames;
+    std::queue<Puzzle> m_frames;
 
 public:
     Game(int goal = 16);
@@ -36,6 +39,8 @@ public:
 
     void set_win_status(bool game_won);
 
+    bool game_started() const;
+
     bool game_won() const;
 
     bool filled_up() const;
@@ -52,7 +57,7 @@ public:
 
     bool frames_empty();
 
-    std::vector<std::vector<int>> pop_frame();
+    Puzzle pop_frame();
 
-    std::vector<std::vector<int>> get_next_frame();
+    Puzzle get_next_frame();
 };

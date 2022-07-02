@@ -46,10 +46,9 @@ void Renderer::render(sf::RenderWindow &window)
     }
 }
 
-void Renderer::restart_game(int goal, sf::RenderWindow &window)
+void Renderer::restart_game(sf::RenderWindow &window)
 {
     m_game.update_puzzle();
-    m_game.set_goal(goal);
     m_game.set_curr_score(0);
     m_game.set_win_status(false);
 

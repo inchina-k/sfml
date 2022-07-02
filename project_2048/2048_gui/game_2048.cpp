@@ -8,7 +8,7 @@ using Random = effolkronium::random_static;
 using namespace std;
 
 Game::Game(int goal)
-    : m_puzzle(4, vector<int>(4)), m_goal(goal), m_curr_score(0), m_game_won(false)
+    : m_puzzle(4, vector<int>(4)), m_goal(goal), m_curr_score(0), m_game_started(false), m_game_won(false)
 {
     vector<int> nums = {16, 32, 64, 128, 256, 512, 1024, 2048};
 
@@ -115,6 +115,11 @@ void Game::set_win_status(bool game_won)
     m_game_won = game_won;
 }
 
+bool Game::game_started() const
+{
+    return m_game_started;
+}
+
 bool Game::game_won() const
 {
     return m_game_won;
@@ -200,6 +205,8 @@ void Game::move_left()
         }
     }
 
+    m_game_started = true;
+
     add_random_number();
 }
 
@@ -245,6 +252,8 @@ void Game::move_up()
             m_frames.push(m_puzzle);
         }
     }
+
+    m_game_started = true;
 
     add_random_number();
 }
@@ -292,6 +301,8 @@ void Game::move_right()
         }
     }
 
+    m_game_started = true;
+
     add_random_number();
 }
 
@@ -338,12 +349,14 @@ void Game::move_down()
         }
     }
 
+    m_game_started = true;
+
     add_random_number();
 }
 
-vector<vector<int>> Game::pop_frame()
+Puzzle Game::pop_frame()
 {
-    vector<vector<int>> curr_frame = m_frames.front();
+    Puzzle curr_frame = m_frames.front();
     m_frames.pop();
     return curr_frame;
 }
@@ -353,7 +366,7 @@ bool Game::frames_empty()
     return m_frames.empty();
 }
 
-std::vector<std::vector<int>> Game::get_next_frame()
+Puzzle Game::get_next_frame()
 {
     if (!frames_empty())
     {

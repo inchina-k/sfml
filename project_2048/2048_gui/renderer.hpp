@@ -22,5 +22,5 @@ public:
 
     void render(sf::RenderWindow &window);
 
-    void restart_game(int goal, sf::RenderWindow &window);
+    void restart_game(sf::RenderWindow &window);
 };
