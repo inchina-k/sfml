@@ -50,6 +50,7 @@ void Renderer::restart_game(sf::RenderWindow &window)
 {
     m_game.update_puzzle();
     m_game.set_curr_score(0);
+    m_game.set_game_started(false);
     m_game.set_win_status(false);
 
     m_game.add_random_number();

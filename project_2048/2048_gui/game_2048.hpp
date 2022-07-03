@@ -13,6 +13,7 @@ class Game
     int m_curr_score;
     bool m_game_started;
     bool m_game_won;
+    std::vector<int> m_goals;
     std::map<int, int> m_best_scores;
     std::queue<Puzzle> m_frames;
 
@@ -31,6 +32,8 @@ public:
 
     int get_best_score(int goal) const;
 
+    int get_puzzle_size() const;
+
     void update_puzzle();
 
     void set_goal(int goal);
@@ -41,11 +44,15 @@ public:
 
     bool game_started() const;
 
+    void set_game_started(bool game_started);
+
     bool game_won() const;
 
     bool filled_up() const;
 
     bool merge_possible() const;
+
+    bool game_lost() const;
 
     void move_left();
 
@@ -60,4 +67,6 @@ public:
     Puzzle pop_frame();
 
     Puzzle get_next_frame();
+
+    std::vector<int> get_goals() const;
 };

@@ -32,9 +32,19 @@ public:
 
     void load_messages();
 
-    void place_messages(sf::RenderWindow &window, int cell_size);
+    void place_messages(sf::RenderWindow &window, double x, double y, int cell_size);
 
-    void change_messages(bool won, bool lost);
+    void set_title_default();
+
+    void set_title_game_won();
+
+    void set_title_game_lost();
+
+    void change_message_goal();
+
+    void change_message_curr_score();
+
+    void change_message_best_score();
 
     void show_messages(sf::RenderWindow &window);
 };

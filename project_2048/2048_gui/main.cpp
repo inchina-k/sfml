@@ -20,10 +20,14 @@ int main()
     sf::Time total_time = sf::Time::Zero;
     sf::Clock clock;
 
-    vector<int> goals = {16, 32, 64, 128, 256, 512, 1024, 2048};
+    // Game
+    Game game;
+
+    vector<int> goals = game.get_goals();
     int goal_index = 0;
 
-    const int n_of_cells = 4;
+    // Field
+    const int n_of_cells = game.get_puzzle_size();
     const double cell_size = min(window.getSize().x, window.getSize().y) / (2 * n_of_cells);
 
     double x = window.getSize().x / 2 - cell_size * 2;
@@ -31,14 +35,14 @@ int main()
 
     Field field(x, y, n_of_cells, cell_size);
 
+    // Renderer
     sf::Texture nums_texture;
     nums_texture.loadFromFile("data/2048 pixel pieces.png");
-
     const int image_size = 100;
 
-    Game game;
     Renderer renderer(game, nums_texture, x, y, n_of_cells, cell_size, image_size);
 
+    // Messages
     sf::Font font;
     font.loadFromFile("data/PressStart2P-Regular.ttf");
     const int text_size = cell_size / 2.5;
@@ -46,6 +50,7 @@ int main()
     Messages messages(game, font, text_size);
     messages.load_messages();
 
+    // Sounds
     sf::SoundBuffer buff_cell_moved, buff_game_won, buff_game_lost;
 
     if (!buff_cell_moved.loadFromFile("data/pop.wav") || !buff_game_won.loadFromFile("data/game_won.wav") || !buff_game_lost.loadFromFile("data/game_lost.wav"))
@@ -79,19 +84,19 @@ int main()
             else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Enter))
             {
                 renderer.restart_game(window);
+                messages.set_title_default();
                 play_sound = true;
             }
 
             bool won = game.game_won();
-            bool lost = game.filled_up() && !game.merge_possible();
-
-            game.update_best_score();
+            bool lost = game.game_lost();
 
             if (!won && !(lost))
             {
                 if (!game.game_started())
                 {
                     change_goal(game, goals, goal_index);
+                    messages.change_message_goal();
                 }
 
                 switch_command(game, sound_cell_moved);
@@ -99,6 +104,9 @@ int main()
             else if (won)
             {
                 change_goal(game, goals, goal_index);
+                messages.change_message_goal();
+
+                messages.set_title_game_won();
 
                 if (play_sound)
                 {
@@ -110,6 +118,9 @@ int main()
             else
             {
                 change_goal(game, goals, goal_index);
+                messages.change_message_goal();
+
+                messages.set_title_game_lost();
 
                 if (play_sound)
                 {
@@ -119,8 +130,12 @@ int main()
                 play_sound = false;
             }
 
-            messages.change_messages(won, lost);
-            messages.place_messages(window, cell_size);
+            messages.place_messages(window, x, y, cell_size);
+
+            messages.change_message_curr_score();
+
+            game.update_best_score();
+            messages.change_message_best_score();
         }
 
         if (total_time > frames_per_sec)

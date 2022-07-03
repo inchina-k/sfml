@@ -8,16 +8,14 @@ using Random = effolkronium::random_static;
 using namespace std;
 
 Game::Game(int goal)
-    : m_puzzle(4, vector<int>(4)), m_goal(goal), m_curr_score(0), m_game_started(false), m_game_won(false)
+    : m_puzzle(4, vector<int>(4)), m_goal(goal), m_curr_score(0), m_game_started(false), m_game_won(false), m_goals({16, 32, 64, 128, 256, 512, 1024, 2048})
 {
-    vector<int> nums = {16, 32, 64, 128, 256, 512, 1024, 2048};
-
     fstream finp("best.data");
-    int num;
-    for (auto e : nums)
+    int best_score;
+    for (auto g : m_goals)
     {
-        finp >> num;
-        m_best_scores.emplace(e, num);
+        finp >> best_score;
+        m_best_scores.emplace(g, best_score);
     }
     finp.close();
 
@@ -89,6 +87,11 @@ int Game::get_best_score(int goal) const
     return m_best_scores.find(goal)->second;
 }
 
+int Game::get_puzzle_size() const
+{
+    return m_puzzle.size();
+}
+
 void Game::update_puzzle()
 {
     for (auto &row : m_puzzle)
@@ -118,6 +121,11 @@ void Game::set_win_status(bool game_won)
 bool Game::game_started() const
 {
     return m_game_started;
+}
+
+void Game::set_game_started(bool game_started)
+{
+    m_game_started = game_started;
 }
 
 bool Game::game_won() const
@@ -160,6 +168,11 @@ bool Game::merge_possible() const
     }
 
     return false;
+}
+
+bool Game::game_lost() const
+{
+    return filled_up() && !merge_possible();
 }
 
 void Game::move_left()
@@ -374,4 +387,9 @@ Puzzle Game::get_next_frame()
     }
 
     return m_puzzle;
+}
+
+std::vector<int> Game::get_goals() const
+{
+    return m_goals;
 }
