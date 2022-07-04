@@ -3,7 +3,6 @@
 #include <SFML/Graphics.hpp>
 #include "game_2048.hpp"
 
-#include <iostream>
 #include <unordered_map>
 
 class Renderer
@@ -18,7 +17,9 @@ class Renderer
     int m_image_size;
 
 public:
-    Renderer(Game &game, sf::Texture nums_texture, int num_of_cells, int x, int y, double cell_size, int image_size);
+    Renderer(Game &game, sf::Texture &texture, int num_of_cells, int x, int y, double cell_size, int image_size);
+
+    void set_texture(sf::Texture &texture);
 
     void render(sf::RenderWindow &window);
 

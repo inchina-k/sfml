@@ -17,5 +17,7 @@ public:
 
     void set_str(std::string &message);
 
+    void set_color(std::pair<sf::Color, sf::Color> &message_color);
+
     void show_message(sf::RenderWindow &window);
 };

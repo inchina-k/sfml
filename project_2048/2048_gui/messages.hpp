@@ -11,7 +11,7 @@ class Messages
     Game &m_game;
     int m_text_size;
 
-    std::string m_text_default = "Game 2048";
+    std::string m_text_default = "2048 Seasons";
     std::string m_text_won = "Game won!";
     std::string m_text_lost = "Game lost";
     std::string m_text_goal = "Goal:\n\n";
@@ -45,6 +45,8 @@ public:
     void change_message_curr_score();
 
     void change_message_best_score();
+
+    void set_messages_color(std::pair<sf::Color, sf::Color> &messages_color);
 
     void show_messages(sf::RenderWindow &window);
 };

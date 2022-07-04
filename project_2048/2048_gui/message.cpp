@@ -28,6 +28,12 @@ void Message::set_str(std::string &message)
     m_text.setString(message);
 }
 
+void Message::set_color(std::pair<sf::Color, sf::Color> &message_color)
+{
+    m_text.setFillColor(message_color.first);
+    m_text.setOutlineColor(message_color.second);
+}
+
 void Message::show_message(sf::RenderWindow &window)
 {
     window.draw(m_text);

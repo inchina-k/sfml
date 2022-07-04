@@ -12,5 +12,7 @@ class Field
 public:
     Field(int num_of_cells, int x, int y, double cell_size);
 
+    void set_field_color(std::pair<sf::Color, sf::Color> &field_color);
+
     void draw_field(sf::RenderWindow &window);
 };

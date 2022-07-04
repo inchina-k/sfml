@@ -5,11 +5,13 @@
 #include "renderer.hpp"
 #include "field.hpp"
 #include "messages.hpp"
+#include "themes.hpp"
 
 using namespace std;
 
 void switch_command(Game &game, sf::Sound &sound_cell_moved);
 void change_goal(Game &game, vector<int> &goals, int &goal_index);
+void change_theme(Themes &themes, int &theme_index, sf::Color &background_color, Field &field, Messages &messages, Renderer &renderer);
 
 int main()
 {
@@ -35,16 +37,9 @@ int main()
 
     Field field(x, y, n_of_cells, cell_size);
 
-    // Renderer
-    sf::Texture nums_texture;
-    nums_texture.loadFromFile("data/2048 pixel pieces.png");
-    const int image_size = 100;
-
-    Renderer renderer(game, nums_texture, x, y, n_of_cells, cell_size, image_size);
-
     // Messages
     sf::Font font;
-    font.loadFromFile("data/PressStart2P-Regular.ttf");
+    font.loadFromFile("data/fonts/PressStart2P-Regular.ttf");
     const int text_size = cell_size / 2.5;
 
     Messages messages(game, font, text_size);
@@ -53,7 +48,7 @@ int main()
     // Sounds
     sf::SoundBuffer buff_cell_moved, buff_game_won, buff_game_lost;
 
-    if (!buff_cell_moved.loadFromFile("data/pop.wav") || !buff_game_won.loadFromFile("data/game_won.wav") || !buff_game_lost.loadFromFile("data/game_lost.wav"))
+    if (!buff_cell_moved.loadFromFile("data/sounds/pop.wav") || !buff_game_won.loadFromFile("data/sounds/game_won.wav") || !buff_game_lost.loadFromFile("data/sounds/game_lost.wav"))
     {
         exit(1);
     }
@@ -68,6 +63,18 @@ int main()
     sound_game_lost.setLoop(false);
 
     bool play_sound = true;
+
+    // Themes
+    Themes themes;
+
+    int theme_index = 0;
+    sf::Color background_color = themes.get_default_background_color();
+
+    // Renderer
+    sf::Texture texture = themes.get_default_texture();
+    const int image_size = 100;
+
+    Renderer renderer(game, texture, x, y, n_of_cells, cell_size, image_size);
 
     while (window.isOpen())
     {
@@ -97,15 +104,14 @@ int main()
                 {
                     change_goal(game, goals, goal_index);
                     messages.change_message_goal();
+
+                    change_theme(themes, theme_index, background_color, field, messages, renderer);
                 }
 
                 switch_command(game, sound_cell_moved);
             }
             else if (won)
             {
-                change_goal(game, goals, goal_index);
-                messages.change_message_goal();
-
                 messages.set_title_game_won();
 
                 if (play_sound)
@@ -114,12 +120,14 @@ int main()
                 }
 
                 play_sound = false;
-            }
-            else
-            {
+
                 change_goal(game, goals, goal_index);
                 messages.change_message_goal();
 
+                change_theme(themes, theme_index, background_color, field, messages, renderer);
+            }
+            else
+            {
                 messages.set_title_game_lost();
 
                 if (play_sound)
@@ -128,6 +136,11 @@ int main()
                 }
 
                 play_sound = false;
+
+                change_goal(game, goals, goal_index);
+                messages.change_message_goal();
+
+                change_theme(themes, theme_index, background_color, field, messages, renderer);
             }
 
             messages.place_messages(window, x, y, cell_size);
@@ -142,7 +155,7 @@ int main()
         {
             total_time -= frames_per_sec;
 
-            window.clear(sf::Color(3, 19, 43));
+            window.clear(background_color);
 
             field.draw_field(window);
 
@@ -188,5 +201,18 @@ void change_goal(Game &game, vector<int> &goals, int &goal_index)
     else if (sf::Keyboard::isKeyPressed(sf::Keyboard::PageDown) && goal_index > 0)
     {
         game.set_goal(goals[--goal_index]);
+    }
+}
+
+void change_theme(Themes &themes, int &theme_index, sf::Color &background_color, Field &field, Messages &messages, Renderer &renderer)
+{
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::F2))
+    {
+        if (theme_index == themes.get_number_of_themes() - 1)
+        {
+            theme_index = -1;
+        }
+
+        themes.change_theme(++theme_index, background_color, field, messages, renderer);
     }
 }

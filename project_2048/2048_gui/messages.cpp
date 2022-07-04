@@ -15,7 +15,7 @@ void Messages::load_messages()
 {
     sf::Text::Style text_style(sf::Text::Style::Bold);
     sf::Color text_fill(sf::Color::Cyan);
-    sf::Color text_outline(209, 207, 207);
+    sf::Color text_outline(207, 208, 209);
     int outline_thickness = 1;
 
     m_message_title.set_properties(m_text_size, text_style, text_fill, text_outline, outline_thickness);
@@ -66,6 +66,17 @@ void Messages::change_message_best_score()
 {
     m_best_score = m_text_best_score + to_string(m_game.get_best_score(m_game.get_goal()));
     m_message_best_score.set_str(m_best_score);
+}
+
+void Messages::set_messages_color(std::pair<sf::Color, sf::Color> &messages_color)
+{
+    m_message_title.set_color(messages_color);
+
+    m_message_goal.set_color(messages_color);
+
+    m_message_curr_score.set_color(messages_color);
+
+    m_message_best_score.set_color(messages_color);
 }
 
 void Messages::show_messages(sf::RenderWindow &window)

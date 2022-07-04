@@ -8,6 +8,12 @@ Field::Field(int x, int y, int num_of_cells, double cell_size)
     m_cell.setOutlineColor(sf::Color(225, 237, 252));
 }
 
+void Field::set_field_color(std::pair<sf::Color, sf::Color> &field_color)
+{
+    m_cell.setFillColor(field_color.first);
+    m_cell.setOutlineColor(field_color.second);
+}
+
 void Field::draw_field(sf::RenderWindow &window)
 {
     sf::Vector2f pos(m_x, m_y);
