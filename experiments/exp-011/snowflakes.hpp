@@ -1,6 +1,6 @@
 #pragma once
 
-#include "background_animations.hpp"
+#include "background_animation.hpp"
 #include "snowflake.hpp"
 
 #include <vector>
