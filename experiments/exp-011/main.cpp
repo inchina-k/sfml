@@ -3,6 +3,7 @@
 #include <iostream>
 #include "background_animations.hpp"
 #include "snowflakes.hpp"
+#include "flowers.hpp"
 
 int main()
 {
@@ -11,7 +12,8 @@ int main()
 
     int bg_anim_index = 0;
 
-    Snowflakes snowflakes(window, window.getSize().x / 20);
+    // Snowflakes snowflakes(window, window.getSize().x / 20);
+    Flowers flowers(window, window.getSize().x / 20);
 
     while (window.isOpen())
     {
@@ -28,10 +30,12 @@ int main()
             // }
         }
 
-        snowflakes.load_animation();
+        // snowflakes.load_animation();
+        flowers.load_animation();
 
         window.clear();
-        snowflakes.draw_animation();
+        // snowflakes.draw_animation();
+        flowers.draw_animation();
         window.display();
     }
 
