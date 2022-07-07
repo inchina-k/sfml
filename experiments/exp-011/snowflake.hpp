@@ -10,10 +10,11 @@ class Snowflake
 
     float m_size;
     float m_x, m_y;
-    float m_dx, m_dy;
+    float m_dy;
     float m_angle;
     float m_da;
     float m_rnd;
+
     sf::Color m_color;
 
     sf::RectangleShape line_1;
