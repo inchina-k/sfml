@@ -4,6 +4,13 @@
 #include "player.hpp"
 #include "block.hpp"
 
+enum class States
+{
+    SetPos,
+    SetDir,
+    Move
+};
+
 class Ball
 {
     sf::RenderWindow &m_window;
@@ -11,6 +18,8 @@ class Ball
     float m_x;
     float m_y;
     sf::Vector2f m_speed;
+
+    States m_state = States::SetPos;
 
     void set_random_speed();
 
@@ -24,6 +33,16 @@ class Ball
 
 public:
     Ball(sf::RenderWindow &window, float x, float y);
+
+    void set_pos(float x, float y);
+
+    sf::Vector2f get_pos() const;
+
+    States get_state() const;
+
+    void set_state(States state);
+
+    void set_speed(sf::Vector2f speed);
 
     void move(float time, Player &player, Block &block);
 

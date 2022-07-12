@@ -18,6 +18,42 @@ sf::Vector2f Block::get_size() const
     return m_body.getSize();
 }
 
+bool Block::is_below(float x, float y) const
+{
+    return x >= m_body.getPosition().x - m_body.getSize().x / 2 &&
+           x <= m_body.getPosition().x + m_body.getSize().x / 2 &&
+           y >= m_body.getPosition().y + m_body.getSize().y / 2;
+}
+
+bool Block::is_above(float x, float y) const
+{
+    return x >= m_body.getPosition().x - m_body.getSize().x / 2 &&
+           x <= m_body.getPosition().x + m_body.getSize().x / 2 &&
+           y <= m_body.getPosition().y - m_body.getSize().y / 2;
+}
+
+bool Block::is_left(float x, float y) const
+{
+    return y >= m_body.getPosition().y - m_body.getSize().y / 2 &&
+           y <= m_body.getPosition().y + m_body.getSize().y / 2 &&
+           x <= m_body.getPosition().x - m_body.getSize().x / 2;
+}
+
+bool Block::is_right(float x, float y) const
+{
+    return y >= m_body.getPosition().y - m_body.getSize().y / 2 &&
+           y <= m_body.getPosition().y + m_body.getSize().y / 2 &&
+           x >= m_body.getPosition().x + m_body.getSize().x / 2;
+}
+
+bool Block::in_rect(float tx, float ty, float radius) const
+{
+    return tx >= m_body.getPosition().x - m_body.getSize().x / 2 - radius &&
+           tx <= m_body.getPosition().x + m_body.getSize().x / 2 + radius &&
+           ty <= m_body.getPosition().y + m_body.getSize().y / 2 + radius &&
+           ty >= m_body.getPosition().y - m_body.getSize().y / 2 - radius;
+}
+
 void Block::draw()
 {
     m_window.draw(m_body);

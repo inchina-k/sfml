@@ -16,5 +16,15 @@ public:
 
     sf::Vector2f get_size() const;
 
+    bool is_below(float x, float y) const;
+
+    bool is_above(float x, float y) const;
+
+    bool is_left(float x, float y) const;
+
+    bool is_right(float x, float y) const;
+
+    bool in_rect(float tx, float ty, float radius) const;
+
     void draw();
 };
