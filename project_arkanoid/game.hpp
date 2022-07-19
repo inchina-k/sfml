@@ -22,11 +22,11 @@ class Game
     sf::Time m_total_time;
     sf::Clock m_clock;
 
-    Player m_player;
-
     std::vector<std::string> m_titles;
     std::vector<std::vector<std::string>> m_levels;
+    size_t m_curr_level;
 
+    Player m_player;
     std::vector<std::unique_ptr<Block>> m_blocks;
     Ball m_ball;
 
@@ -41,6 +41,9 @@ class Game
 
     bool m_game_started = false;
     bool m_start_moving = false;
+
+    std::string m_text_level = "Level: ";
+    Message m_message_level;
 
     std::string m_text_won = "Game won";
     Message m_message_game_won;
@@ -67,11 +70,11 @@ class Game
     void run_animation();
     // ---
 
+    bool load_levels();
+
     void load_blocks();
 
     void restart();
-
-    bool load_levels();
 
 public:
     Game(sf::RenderWindow &window, sf::Font &font);

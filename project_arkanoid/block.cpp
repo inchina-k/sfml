@@ -16,7 +16,7 @@ sf::Vector2f Block::get_pos() const
 
 sf::Vector2f Block::get_size() const
 {
-    return m_body.getSize() + sf::Vector2f(1, 1);
+    return m_body.getSize();
 }
 
 bool Block::is_below(float x, float y) const
@@ -68,10 +68,15 @@ void Block::heal()
 
 void Block::reduce_health()
 {
-    if (--m_health > 0)
+    if (--m_health > 0 && m_health < m_initial_health)
     {
         m_body.setFillColor(sf::Color(102, 16, 93));
     }
+}
+
+int Block::get_initial_health() const
+{
+    return m_initial_health;
 }
 
 void Block::draw()

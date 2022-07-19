@@ -34,5 +34,7 @@ public:
 
     void reduce_health();
 
+    int get_initial_health() const;
+
     void draw();
 };

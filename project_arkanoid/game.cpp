@@ -9,9 +9,10 @@
 using Random = effolkronium::random_static;
 
 Game::Game(sf::RenderWindow &window, sf::Font &font)
-    : m_window(window), m_frames_per_sec(sf::seconds(0.01f)), m_total_time(sf::Time::Zero),
+    : m_window(window), m_frames_per_sec(sf::seconds(0.01f)), m_total_time(sf::Time::Zero), m_curr_level(0),
       m_player(m_window, m_window.getSize().x / 2, m_window.getSize().y - m_player.get_size().y - 30),
       m_ball(m_window, m_window.getSize().x / 2, m_player.get_pos().y - m_player.get_size().y * 2),
+      m_message_level(m_text_level, font),
       m_message_game_won(m_text_won, font),
       m_message_game_lost(m_text_lost, font),
       m_message_lives(m_text_lives, font),
@@ -28,69 +29,14 @@ Game::Game(sf::RenderWindow &window, sf::Font &font)
     m_message_game_won.set_properties(size, style, fill, outline, 2);
     m_message_game_lost.set_properties(size, style, fill, outline, 2);
     m_message_game_name.set_properties(size, style, fill, outline, 2);
+    m_message_level.set_properties(size / 3, style, fill, outline, 2);
     m_message_lives.set_properties(size / 3, style, fill, outline, 2);
 
     load_levels();
-    std::cout << "load_levels done" << std::endl;
+    std::cout << "load_levels is done" << std::endl;
 
     load_blocks();
-    std::cout << "load_blocks done" << std::endl;
-}
-
-bool Game::load_levels()
-{
-    std::fstream fs("levels.data");
-
-    if (!fs)
-    {
-        return false;
-    }
-
-    for (;;)
-    {
-        std::string line;
-
-        if (!std::getline(fs, line))
-            break;
-
-        if (!std::getline(fs, line))
-            return false;
-
-        int height;
-        std::istringstream ss(line);
-
-        if (!(ss >> height))
-        {
-            std::cout << "???" << std::endl;
-            return false;
-        }
-
-        std::vector<std::string> level;
-        for (int i = 0; i < height; i++)
-        {
-            if (!std::getline(fs, line))
-            {
-                std::cout << ";;;" << std::endl;
-                return false;
-            }
-
-            level.push_back(line);
-        }
-
-        m_levels.push_back(level);
-    }
-
-    std::cout << m_levels.size() << std::endl;
-
-    for (auto &e : m_levels)
-    {
-        for (auto &ee : e)
-        {
-            std::cout << ee << std::endl;
-        }
-    }
-
-    return true;
+    std::cout << "load_blocks is done" << std::endl;
 }
 
 void Game::load_animation()
@@ -130,19 +76,71 @@ void Game::run_animation()
     m_button.draw(m_window);
 }
 
+bool Game::load_levels()
+{
+    std::fstream fs("levels.data");
+
+    if (!fs)
+    {
+        return false;
+    }
+
+    for (;;)
+    {
+        std::string line;
+
+        if (!std::getline(fs, line))
+        {
+            break;
+        }
+
+        m_titles.push_back(line);
+
+        if (!std::getline(fs, line))
+        {
+            std::cout << "height is not found" << std::endl;
+            return false;
+        }
+
+        int height;
+        std::istringstream ss(line);
+
+        if (!(ss >> height))
+        {
+            std::cout << "height is not an int" << std::endl;
+            return false;
+        }
+
+        std::vector<std::string> level;
+
+        for (int i = 0; i < height; i++)
+        {
+            if (!std::getline(fs, line))
+            {
+                std::cout << "level is not found" << std::endl;
+                return false;
+            }
+
+            level.push_back(line);
+        }
+
+        m_levels.push_back(level);
+    }
+
+    return true;
+}
+
 void Game::load_blocks()
 {
-    sf::Vector2f block_size(m_window.getSize().x / m_levels[0][0].size(), m_window.getSize().y / m_levels[0].size());
+    sf::Vector2f block_size(m_window.getSize().x / m_levels[m_curr_level][0].size(), m_window.getSize().y / m_levels[m_curr_level].size());
 
     std::unordered_map<char, std::pair<sf::Color, int>> block_types = {{'a', {sf::Color::Green, 1}}, {'b', {sf::Color::Magenta, 2}}, {'c', {sf::Color(235, 210, 52), NAN}}};
 
-    for (size_t i = 0; i < m_levels[0].size(); i++)
+    for (size_t i = 0; i < m_levels[m_curr_level].size(); i++)
     {
-        for (size_t j = 0; j < m_levels[0][i].size(); j++)
+        for (size_t j = 0; j < m_levels[m_curr_level][i].size(); j++)
         {
-            std::cout << i << ' ' << j << std::endl;
-
-            char type = m_levels[0][i][j];
+            char type = m_levels[m_curr_level][i][j];
 
             if (type != '.')
             {
@@ -166,6 +164,11 @@ void Game::restart()
     }
     else if (m_game_state == GameState::Won)
     {
+        if (++m_curr_level == m_levels.size())
+        {
+            m_curr_level = 0;
+        }
+
         m_blocks.clear();
         load_blocks();
     }
@@ -237,9 +240,10 @@ void Game::run()
         else
         {
             size_t counter = 0;
+
             for (auto &block : m_blocks)
             {
-                if (block->is_ruined())
+                if (block->is_ruined() || block->get_initial_health() == NAN)
                 {
                     ++counter;
                 }
@@ -265,9 +269,13 @@ void Game::run()
             update_animation();
         }
 
-        std::string str = m_text_lives + std::to_string(m_ball.get_remained_lives());
-        m_message_lives.set_str(str);
-        m_message_lives.set_pos(m_window.getSize().x - m_blocks.front()->get_size().x * 3, m_blocks.front()->get_size().y);
+        std::string level = m_text_level + m_titles[m_curr_level];
+        m_message_level.set_str(level);
+        m_message_level.set_pos(m_blocks.front()->get_size().x * 2, m_blocks.front()->get_size().y);
+
+        std::string lives = m_text_lives + std::to_string(m_ball.get_remained_lives());
+        m_message_lives.set_str(lives);
+        m_message_lives.set_pos(m_window.getSize().x - m_blocks.front()->get_size().x * 2, m_blocks.front()->get_size().y);
 
         // draw
         if (!m_game_started)
@@ -306,6 +314,7 @@ void Game::run()
                 m_message_game_lost.show_message(m_window);
             }
 
+            m_message_level.show_message(m_window);
             m_message_lives.show_message(m_window);
         }
 
