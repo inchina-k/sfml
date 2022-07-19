@@ -16,7 +16,7 @@ Ball::Ball(sf::RenderWindow &window, float x, float y)
 void Ball::set_speed()
 {
     float speed = std::min(m_window.getSize().x, m_window.getSize().y) / 1.5;
-    float angle = Random::get(4.0, 5.5);
+    float angle = 5;
 
     m_speed.x = speed * cos(angle);
     m_speed.y = speed * sin(angle);

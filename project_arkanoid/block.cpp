@@ -1,19 +1,12 @@
 #include "block.hpp"
 
-Block::Block(sf::RenderWindow &window, sf::Vector2f &size, sf::Color &color, int health)
-    : m_window(window), m_body(size), m_initial_color(color), m_initial_health(health), m_health(health)
+Block::Block(sf::RenderWindow &window, sf::Vector2f &size, sf::Vector2f &pos, sf::Color &color, int health)
+    : m_window(window), m_body(size), m_pos(pos), m_initial_color(color), m_initial_health(health), m_health(health)
 {
     m_body.setFillColor(m_initial_color);
     m_body.setOutlineColor(sf::Color::White);
-    m_body.setOutlineThickness(2);
-}
-
-void Block::set_pos(float x, float y)
-{
-    m_x = x;
-    m_y = y;
-
-    m_body.setPosition(m_x, m_y);
+    m_body.setOutlineThickness(1);
+    m_body.setPosition(m_pos);
 }
 
 sf::Vector2f Block::get_pos() const
@@ -23,7 +16,7 @@ sf::Vector2f Block::get_pos() const
 
 sf::Vector2f Block::get_size() const
 {
-    return m_body.getSize();
+    return m_body.getSize() + sf::Vector2f(1, 1);
 }
 
 bool Block::is_below(float x, float y) const

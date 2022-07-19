@@ -6,16 +6,13 @@ class Block
 {
     sf::RenderWindow &m_window;
     sf::RectangleShape m_body;
-    float m_x;
-    float m_y;
+    sf::Vector2f m_pos;
     sf::Color m_initial_color;
     int m_initial_health;
     int m_health;
 
 public:
-    Block(sf::RenderWindow &window, sf::Vector2f &size, sf::Color &color, int health);
-
-    void set_pos(float x, float y);
+    Block(sf::RenderWindow &window, sf::Vector2f &size, sf::Vector2f &pos, sf::Color &color, int health);
 
     sf::Vector2f get_pos() const;
 

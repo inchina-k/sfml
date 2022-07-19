@@ -12,6 +12,7 @@
 #include <vector>
 #include <memory>
 #include <string>
+#include <fstream>
 
 class Game
 {
@@ -22,6 +23,10 @@ class Game
     sf::Clock m_clock;
 
     Player m_player;
+
+    std::vector<std::string> m_titles;
+    std::vector<std::vector<std::string>> m_levels;
+
     std::vector<std::unique_ptr<Block>> m_blocks;
     Ball m_ball;
 
@@ -64,9 +69,9 @@ class Game
 
     void load_blocks();
 
-    void place_blocks();
-
     void restart();
+
+    bool load_levels();
 
 public:
     Game(sf::RenderWindow &window, sf::Font &font);

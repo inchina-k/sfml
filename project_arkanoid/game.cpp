@@ -2,6 +2,10 @@
 
 #include "../libs/random.hpp"
 
+#include <sstream>
+#include <iostream>
+#include <unordered_map>
+
 using Random = effolkronium::random_static;
 
 Game::Game(sf::RenderWindow &window, sf::Font &font)
@@ -26,7 +30,67 @@ Game::Game(sf::RenderWindow &window, sf::Font &font)
     m_message_game_name.set_properties(size, style, fill, outline, 2);
     m_message_lives.set_properties(size / 3, style, fill, outline, 2);
 
+    load_levels();
+    std::cout << "load_levels done" << std::endl;
+
     load_blocks();
+    std::cout << "load_blocks done" << std::endl;
+}
+
+bool Game::load_levels()
+{
+    std::fstream fs("levels.data");
+
+    if (!fs)
+    {
+        return false;
+    }
+
+    for (;;)
+    {
+        std::string line;
+
+        if (!std::getline(fs, line))
+            break;
+
+        if (!std::getline(fs, line))
+            return false;
+
+        int height;
+        std::istringstream ss(line);
+
+        if (!(ss >> height))
+        {
+            std::cout << "???" << std::endl;
+            return false;
+        }
+
+        std::vector<std::string> level;
+        for (int i = 0; i < height; i++)
+        {
+            if (!std::getline(fs, line))
+            {
+                std::cout << ";;;" << std::endl;
+                return false;
+            }
+
+            level.push_back(line);
+        }
+
+        m_levels.push_back(level);
+    }
+
+    std::cout << m_levels.size() << std::endl;
+
+    for (auto &e : m_levels)
+    {
+        for (auto &ee : e)
+        {
+            std::cout << ee << std::endl;
+        }
+    }
+
+    return true;
 }
 
 void Game::load_animation()
@@ -68,37 +132,26 @@ void Game::run_animation()
 
 void Game::load_blocks()
 {
-    const int num_of_blocks = 70;
-    sf::Vector2f block_size(m_window.getSize().x / 15, m_window.getSize().y / 15);
+    sf::Vector2f block_size(m_window.getSize().x / m_levels[0][0].size(), m_window.getSize().y / m_levels[0].size());
 
-    std::vector<std::pair<sf::Color, int>> block_types = {{sf::Color::Green, 1}, {sf::Color::Magenta, 2}};
+    std::unordered_map<char, std::pair<sf::Color, int>> block_types = {{'a', {sf::Color::Green, 1}}, {'b', {sf::Color::Magenta, 2}}, {'c', {sf::Color(235, 210, 52), NAN}}};
 
-    for (int i = 0; i < num_of_blocks; i++)
+    for (size_t i = 0; i < m_levels[0].size(); i++)
     {
-        std::pair type = block_types[Random::get(0, int(block_types.size() - 1))];
-        m_blocks.push_back(std::make_unique<Block>(m_window, block_size, type.first, type.second));
-    }
-}
-
-void Game::place_blocks()
-{
-    sf::Vector2f block_size = m_blocks.front()->get_size();
-    float x = m_window.getSize().x / 2 - block_size.x * 5 - 2;
-    float y = m_window.getSize().y / 2 - block_size.y * 5 - 2;
-
-    sf::Vector2f pos(x, y);
-    int index = 0;
-
-    for (int i = 0; i < 7; i++)
-    {
-        for (int j = 0; j < 10; j++)
+        for (size_t j = 0; j < m_levels[0][i].size(); j++)
         {
-            m_blocks[index++]->set_pos(pos.x, pos.y);
-            pos.x += block_size.x + 2;
-        }
+            std::cout << i << ' ' << j << std::endl;
 
-        pos.x = x;
-        pos.y += block_size.y + 2;
+            char type = m_levels[0][i][j];
+
+            if (type != '.')
+            {
+                std::pair block_type = block_types[type];
+                sf::Vector2f pos(j * block_size.x + 2, i * block_size.y + 2);
+
+                m_blocks.push_back(std::make_unique<Block>(m_window, block_size, pos, block_type.first, block_type.second));
+            }
+        }
     }
 }
 
@@ -207,21 +260,31 @@ void Game::run()
             m_message_game_won.set_pos(m_window.getSize().x / 2, m_window.getSize().y / 2);
         }
 
-        m_game_started ? place_blocks() : update_animation();
+        if (!m_game_started)
+        {
+            update_animation();
+        }
 
         std::string str = m_text_lives + std::to_string(m_ball.get_remained_lives());
         m_message_lives.set_str(str);
         m_message_lives.set_pos(m_window.getSize().x - m_blocks.front()->get_size().x * 3, m_blocks.front()->get_size().y);
 
         // draw
-        m_window.clear();
-
         if (!m_game_started)
         {
+            sf::RectangleShape rect;
+            rect.setPosition(0, 0);
+            rect.setSize(sf::Vector2f(m_window.getSize().x, m_window.getSize().y));
+            rect.setFillColor(sf::Color(0, 0, 0, 100));
+
+            m_window.draw(rect);
+
             run_animation();
         }
         else
         {
+            m_window.clear();
+
             m_player.draw();
 
             for (auto &block : m_blocks)

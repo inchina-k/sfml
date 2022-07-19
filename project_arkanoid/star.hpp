@@ -8,11 +8,12 @@ class Star
 {
     sf::CircleShape m_body;
     float m_radius;
-    float m_x;
-    float m_y;
-    float m_z;
+    sf::Vector2f m_pos;
+    sf::Vector2f m_speed;
 
     std::vector<sf::Color> m_colors = {sf::Color::White, sf::Color::Cyan, sf::Color::Magenta, sf::Color::Blue, sf::Color::Green};
+
+    void load(sf::RenderWindow &window);
 
 public:
     Star(sf::RenderWindow &window);
