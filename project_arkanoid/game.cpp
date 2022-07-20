@@ -5,6 +5,7 @@
 #include <sstream>
 #include <iostream>
 #include <unordered_map>
+#include <cmath>
 
 using Random = effolkronium::random_static;
 
@@ -32,7 +33,10 @@ Game::Game(sf::RenderWindow &window, sf::Font &font)
     m_message_level.set_properties(size / 3, style, fill, outline, 2);
     m_message_lives.set_properties(size / 3, style, fill, outline, 2);
 
-    load_levels();
+    if (!load_levels())
+    {
+        exit(1);
+    }
     std::cout << "load_levels is done" << std::endl;
 
     load_blocks();
@@ -78,7 +82,7 @@ void Game::run_animation()
 
 bool Game::load_levels()
 {
-    std::fstream fs("levels.data");
+    std::fstream fs("data/levels.data");
 
     if (!fs)
     {
@@ -134,7 +138,14 @@ void Game::load_blocks()
 {
     sf::Vector2f block_size(m_window.getSize().x / m_levels[m_curr_level][0].size(), m_window.getSize().y / m_levels[m_curr_level].size());
 
-    std::unordered_map<char, std::pair<sf::Color, int>> block_types = {{'a', {sf::Color::Green, 1}}, {'b', {sf::Color::Magenta, 2}}, {'c', {sf::Color(235, 210, 52), NAN}}};
+    sf::Texture a_block, b_block, c_block;
+
+    if (!a_block.loadFromFile("data/images/a_block.png") || !b_block.loadFromFile("data/images/b_block.png") || !c_block.loadFromFile("data/images/c_block.png"))
+    {
+        exit(1);
+    }
+
+    std::unordered_map<char, std::pair<sf::Texture, int>> block_types = {{'a', {a_block, 1}}, {'b', {b_block, 2}}, {'c', {c_block, -1}}};
 
     for (size_t i = 0; i < m_levels[m_curr_level].size(); i++)
     {
@@ -243,7 +254,7 @@ void Game::run()
 
             for (auto &block : m_blocks)
             {
-                if (block->is_ruined() || block->get_initial_health() == NAN)
+                if (block->is_ruined() || block->get_initial_health() == -1)
                 {
                     ++counter;
                 }

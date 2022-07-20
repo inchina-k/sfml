@@ -1,11 +1,9 @@
 #include "block.hpp"
 
-Block::Block(sf::RenderWindow &window, sf::Vector2f &size, sf::Vector2f &pos, sf::Color &color, int health)
-    : m_window(window), m_body(size), m_pos(pos), m_initial_color(color), m_initial_health(health), m_health(health)
+Block::Block(sf::RenderWindow &window, sf::Vector2f &size, sf::Vector2f &pos, sf::Texture &texture, int health)
+    : m_window(window), m_body(size), m_pos(pos), m_initial_texture(texture), m_initial_health(health), m_health(health)
 {
-    m_body.setFillColor(m_initial_color);
-    m_body.setOutlineColor(sf::Color::White);
-    m_body.setOutlineThickness(1);
+    m_body.setTexture(&m_initial_texture);
     m_body.setPosition(m_pos);
 }
 
@@ -63,14 +61,14 @@ bool Block::is_ruined() const
 void Block::heal()
 {
     m_health = m_initial_health;
-    m_body.setFillColor(m_initial_color);
+    m_body.setFillColor(sf::Color(255, 255, 255));
 }
 
 void Block::reduce_health()
 {
     if (--m_health > 0 && m_health < m_initial_health)
     {
-        m_body.setFillColor(sf::Color(102, 16, 93));
+        m_body.setFillColor(sf::Color(181, 147, 180));
     }
 }
 

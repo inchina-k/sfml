@@ -7,12 +7,12 @@ class Block
     sf::RenderWindow &m_window;
     sf::RectangleShape m_body;
     sf::Vector2f m_pos;
-    sf::Color m_initial_color;
+    sf::Texture m_initial_texture;
     int m_initial_health;
     int m_health;
 
 public:
-    Block(sf::RenderWindow &window, sf::Vector2f &size, sf::Vector2f &pos, sf::Color &color, int health);
+    Block(sf::RenderWindow &window, sf::Vector2f &size, sf::Vector2f &pos, sf::Texture &texture, int health);
 
     sf::Vector2f get_pos() const;
 

@@ -6,6 +6,7 @@ class Player
 {
     sf::RenderWindow &m_window;
     sf::RectangleShape m_body;
+    sf::Texture m_texture;
     float m_x;
     float m_y;
 

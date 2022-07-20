@@ -3,7 +3,8 @@
 Player::Player(sf::RenderWindow &window, float x, float y)
     : m_window(window), m_body(sf::Vector2f(m_window.getSize().x / 10, m_window.getSize().x / 100)), m_x(x), m_y(y)
 {
-    m_body.setFillColor(sf::Color::Cyan);
+    m_texture.loadFromFile("data/images/player.png");
+    m_body.setTexture(&m_texture);
     m_body.setOrigin(m_body.getSize().x / 2, m_body.getSize().y / 2);
     m_body.setPosition(m_x, m_y);
 }
