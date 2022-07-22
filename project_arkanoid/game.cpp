@@ -9,17 +9,25 @@
 
 using Random = effolkronium::random_static;
 
-Game::Game(sf::RenderWindow &window, sf::Font &font)
+Game::Game(sf::RenderWindow &window, sf::Font &font,
+           sf::Music &music, sf::Sound &sound_won, sf::Sound &sound_lost,
+           sf::Sound &sound_hit, sf::Sound &sound_pop, sf::Sound &sound_unbreakable)
     : m_window(window), m_frames_per_sec(sf::seconds(0.01f)), m_total_time(sf::Time::Zero), m_curr_level(0),
       m_player(m_window, m_window.getSize().x / 2, m_window.getSize().y - m_player.get_size().y - 30),
-      m_ball(m_window, m_window.getSize().x / 2, m_player.get_pos().y - m_player.get_size().y * 2),
+      m_ball(m_window, m_window.getSize().x / 2, m_player.get_pos().y - m_player.get_size().y * 2, sound_hit, sound_pop, sound_unbreakable),
+      m_music(music),
+      m_sound_game_won(sound_won),
+      m_sound_game_lost(sound_lost),
       m_message_level(m_text_level, font),
-      m_message_game_won(m_text_won, font),
-      m_message_game_lost(m_text_lost, font),
+      m_message_game_state(m_text_won, font),
       m_message_lives(m_text_lives, font),
       m_message_game_name(m_game_name, font),
       m_button(m_window.getSize().x / 7, m_window.getSize().x / 17, m_play_text, font)
 {
+    m_music.setLoop(true);
+    m_sound_game_won.setLoop(false);
+    m_sound_game_lost.setLoop(false);
+
     load_animation();
 
     float size = m_window.getSize().x / 15;
@@ -27,8 +35,7 @@ Game::Game(sf::RenderWindow &window, sf::Font &font)
     sf::Color fill = sf::Color::White;
     sf::Color outline = sf::Color::White;
 
-    m_message_game_won.set_properties(size, style, fill, outline, 2);
-    m_message_game_lost.set_properties(size, style, fill, outline, 2);
+    m_message_game_state.set_properties(size, style, fill, outline, 2);
     m_message_game_name.set_properties(size, style, fill, outline, 2);
     m_message_level.set_properties(size / 3, style, fill, outline, 2);
     m_message_lives.set_properties(size / 3, style, fill, outline, 2);
@@ -193,10 +200,14 @@ void Game::restart()
     m_ball.set_missed(false);
     m_ball.set_lost(false);
     m_ball.resume_lives();
+
+    m_music.play();
 }
 
 void Game::run()
 {
+    m_music.play();
+
     while (m_window.isOpen())
     {
         sf::Event event;
@@ -206,7 +217,7 @@ void Game::run()
             {
                 m_window.close();
             }
-            else if (m_game_started && sf::Mouse::isButtonPressed(sf::Mouse::Button::Left))
+            else if (m_game_started && m_game_state == GameState::Default && sf::Mouse::isButtonPressed(sf::Mouse::Button::Left))
             {
                 m_start_moving = true;
             }
@@ -234,9 +245,10 @@ void Game::run()
             }
         }
 
-        if (m_ball.is_lost())
+        if (m_ball.is_lost() && m_game_state == GameState::Default)
         {
             m_game_state = GameState::Lost;
+            m_play = true;
         }
         else if (m_ball.is_missed())
         {
@@ -246,7 +258,6 @@ void Game::run()
 
             m_ball.set_pos(m_window.getSize().x / 2, m_player.get_pos().y - m_player.get_size().y * 2);
             m_ball.set_missed(false);
-            m_ball.set_lost(false);
         }
         else
         {
@@ -260,24 +271,40 @@ void Game::run()
                 }
             }
 
-            if (counter == m_blocks.size())
+            if (counter == m_blocks.size() && m_game_state == GameState::Default)
             {
                 m_game_state = GameState::Won;
+                m_play = true;
             }
         }
 
-        if (m_game_state == GameState::Lost)
+        if (m_game_state == GameState::Lost && m_play)
         {
-            m_message_game_lost.set_pos(m_window.getSize().x / 2, m_window.getSize().y / 2);
+            m_message_game_state.set_str(m_text_lost);
+
+            m_music.stop();
+            m_sound_game_lost.play();
+
+            m_play = false;
         }
-        else if (m_game_state == GameState::Won)
+        else if (m_game_state == GameState::Won && m_play)
         {
-            m_message_game_won.set_pos(m_window.getSize().x / 2, m_window.getSize().y / 2);
+            m_message_game_state.set_str(m_text_won);
+
+            m_music.stop();
+            m_sound_game_won.play();
+
+            m_play = false;
         }
+        m_message_game_state.set_pos(m_window.getSize().x / 2, m_window.getSize().y / 2);
 
         if (!m_game_started)
         {
             update_animation();
+        }
+        else
+        {
+            m_music.setVolume(15);
         }
 
         std::string level = m_text_level + m_titles[m_curr_level];
@@ -316,13 +343,9 @@ void Game::run()
 
             m_ball.draw();
 
-            if (m_game_state == GameState::Won)
+            if (m_game_state != GameState::Default)
             {
-                m_message_game_won.show_message(m_window);
-            }
-            else if (m_game_state == GameState::Lost)
-            {
-                m_message_game_lost.show_message(m_window);
+                m_message_game_state.show_message(m_window);
             }
 
             m_message_level.show_message(m_window);

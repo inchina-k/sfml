@@ -1,6 +1,8 @@
 #pragma once
 
 #include "SFML/Graphics.hpp"
+#include "SFML/Audio.hpp"
+
 #include "player.hpp"
 #include "block.hpp"
 
@@ -9,19 +11,24 @@
 class Ball
 {
     sf::RenderWindow &m_window;
+
     sf::CircleShape m_body;
     float m_x;
     float m_y;
     sf::Vector2f m_speed;
+
     bool m_missed;
     bool m_lost;
     int m_lives;
     int m_lives_remained;
 
+    sf::Sound &m_sound_hit, &m_sound_pop, &m_sound_unbreakable;
+
     void set_speed();
 
 public:
-    Ball(sf::RenderWindow &window, float x, float y);
+    Ball(sf::RenderWindow &window, float x, float y,
+         sf::Sound &sound_hit, sf::Sound &sound_pop, sf::Sound &sound_unbreakable);
 
     void set_pos(float x, float y);
 

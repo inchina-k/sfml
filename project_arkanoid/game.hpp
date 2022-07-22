@@ -1,6 +1,7 @@
 #pragma once
 
 #include <SFML/Graphics.hpp>
+#include <SFML/Audio.hpp>
 
 #include "player.hpp"
 #include "block.hpp"
@@ -30,6 +31,10 @@ class Game
     std::vector<std::unique_ptr<Block>> m_blocks;
     Ball m_ball;
 
+    sf::Music &m_music;
+    sf::Sound &m_sound_game_won, &m_sound_game_lost;
+    bool m_play = false;
+
     enum class GameState
     {
         Won,
@@ -46,10 +51,8 @@ class Game
     Message m_message_level;
 
     std::string m_text_won = "Game won";
-    Message m_message_game_won;
-
     std::string m_text_lost = "Game lost";
-    Message m_message_game_lost;
+    Message m_message_game_state;
 
     std::string m_text_lives = "Lives: ";
     Message m_message_lives;
@@ -77,7 +80,9 @@ class Game
     void restart();
 
 public:
-    Game(sf::RenderWindow &window, sf::Font &font);
+    Game(sf::RenderWindow &window, sf::Font &font,
+         sf::Music &music, sf::Sound &sound_won, sf::Sound &sound_lost,
+         sf::Sound &sound_hit, sf::Sound &sound_pop, sf::Sound &sound_unbreakable);
 
     void run();
 };

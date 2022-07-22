@@ -3,14 +3,22 @@
 
 using Random = effolkronium::random_static;
 
-Ball::Ball(sf::RenderWindow &window, float x, float y)
-    : m_window(window), m_body(m_window.getSize().y / 45), m_x(x), m_y(y), m_missed(false), m_lost(false), m_lives(3), m_lives_remained(3)
+Ball::Ball(sf::RenderWindow &window, float x, float y,
+           sf::Sound &sound_hit, sf::Sound &sound_pop, sf::Sound &sound_unbreakable)
+    : m_window(window), m_body(m_window.getSize().y / 45), m_x(x), m_y(y), m_missed(false), m_lost(false), m_lives(3), m_lives_remained(3),
+      m_sound_hit(sound_hit), m_sound_pop(sound_pop), m_sound_unbreakable(sound_unbreakable)
 {
     m_body.setFillColor(sf::Color::Yellow);
     m_body.setOrigin(m_body.getRadius(), m_body.getRadius());
     m_body.setPosition(m_x, m_y);
 
     set_speed();
+
+    m_sound_pop.setVolume(50);
+
+    m_sound_hit.setLoop(false);
+    m_sound_pop.setLoop(false);
+    m_sound_unbreakable.setLoop(false);
 }
 
 void Ball::set_speed()
@@ -37,12 +45,16 @@ void Ball::move(float time, Player &player, std::vector<std::unique_ptr<Block>> 
         float excess = m_body.getPosition().x - (m_window.getSize().x - m_body.getRadius());
         m_x = m_window.getSize().x - m_body.getRadius() - excess;
         m_speed.x = -m_speed.x;
+
+        m_sound_hit.play();
     }
     else if (m_x - m_body.getRadius() <= 0)
     {
         float excess = m_body.getRadius() - m_body.getPosition().x;
         m_x = m_body.getRadius() + excess;
         m_speed.x = -m_speed.x;
+
+        m_sound_hit.play();
     }
     else if (m_y + m_body.getRadius() >= m_window.getSize().y + 300)
     {
@@ -61,17 +73,23 @@ void Ball::move(float time, Player &player, std::vector<std::unique_ptr<Block>> 
         float excess = m_body.getRadius() - m_body.getPosition().y;
         m_y = m_body.getRadius() + excess;
         m_speed.y = -m_speed.y;
+
+        m_sound_hit.play();
     }
     else if (player.is_above(curr_pos.x, curr_pos.y) && player.in_rect(new_pos.x, new_pos.y, m_body.getRadius()))
     {
         float excess = player.get_pos().y - player.get_size().y / 2 - m_body.getRadius() - new_pos.y;
         m_y = player.get_pos().y - player.get_size().y / 2 - excess - m_body.getRadius();
         m_speed.y = -m_speed.y;
+
+        m_sound_hit.play();
     }
     else if (player.in_rect(new_pos.x, new_pos.y, m_body.getRadius()))
     {
         m_speed.x = -m_speed.x + Random::get(-1.5, 1.5);
         m_speed.y = -m_speed.y + Random::get(-1.5, 1.5);
+
+        m_sound_hit.play();
     }
     else
     {
@@ -86,6 +104,15 @@ void Ball::move(float time, Player &player, std::vector<std::unique_ptr<Block>> 
                     m_speed.y = -m_speed.y;
 
                     block->reduce_health();
+
+                    if (block->get_initial_health() == -1)
+                    {
+                        m_sound_unbreakable.play();
+                    }
+                    else
+                    {
+                        block->is_ruined() ? m_sound_pop.play() : m_sound_hit.play();
+                    }
                 }
                 else if (block->is_above(curr_pos.x, curr_pos.y) && block->in_rect(new_pos.x, new_pos.y, m_body.getRadius()))
                 {
@@ -94,6 +121,15 @@ void Ball::move(float time, Player &player, std::vector<std::unique_ptr<Block>> 
                     m_speed.y = -m_speed.y;
 
                     block->reduce_health();
+
+                    if (block->get_initial_health() == -1)
+                    {
+                        m_sound_unbreakable.play();
+                    }
+                    else
+                    {
+                        block->is_ruined() ? m_sound_pop.play() : m_sound_hit.play();
+                    }
                 }
                 else if (block->is_left(curr_pos.x, curr_pos.y) && block->in_rect(new_pos.x, new_pos.y, m_body.getRadius()))
                 {
@@ -102,6 +138,15 @@ void Ball::move(float time, Player &player, std::vector<std::unique_ptr<Block>> 
                     m_speed.x = -m_speed.x;
 
                     block->reduce_health();
+
+                    if (block->get_initial_health() == -1)
+                    {
+                        m_sound_unbreakable.play();
+                    }
+                    else
+                    {
+                        block->is_ruined() ? m_sound_pop.play() : m_sound_hit.play();
+                    }
                 }
                 else if (block->is_right(curr_pos.x, curr_pos.y) && block->in_rect(new_pos.x, new_pos.y, m_body.getRadius()))
                 {
@@ -110,11 +155,29 @@ void Ball::move(float time, Player &player, std::vector<std::unique_ptr<Block>> 
                     m_speed.x = -m_speed.x;
 
                     block->reduce_health();
+
+                    if (block->get_initial_health() == -1)
+                    {
+                        m_sound_unbreakable.play();
+                    }
+                    else
+                    {
+                        block->is_ruined() ? m_sound_pop.play() : m_sound_hit.play();
+                    }
                 }
                 // else if (block->in_rect(new_pos.x, new_pos.y, m_body.getRadius()))
                 // {
                 //     m_speed.x = -m_speed.x + Random::get(-1.5, 1.5);
                 //     m_speed.y = -m_speed.y + Random::get(-1.5, 1.5);
+                //
+                //     if (block->get_initial_health() == -1)
+                //     {
+                //         m_sound_unbreakable.play();
+                //     }
+                //     else
+                //     {
+                //         block->is_ruined() ? m_sound_pop.play() : m_sound_hit.play();
+                //     }
                 // }
             }
         }
