@@ -1,10 +1,21 @@
 #include "block.hpp"
 
+#include "../libs/random.hpp"
+
+using Random = effolkronium::random_static;
+
 Block::Block(sf::RenderWindow &window, sf::Vector2f &size, sf::Vector2f &pos, sf::Texture &texture, int health)
-    : m_window(window), m_body(size), m_pos(pos), m_initial_texture(texture), m_initial_health(health), m_health(health)
+    : m_window(window), m_body(size), m_pos(pos), m_initial_texture(texture), m_damaged_textures(3), m_initial_health(health), m_health(health)
 {
     m_body.setTexture(&m_initial_texture);
     m_body.setPosition(m_pos);
+
+    if (!m_damaged_textures[0].loadFromFile("data/images/b_block_damaged_0.png") ||
+        !m_damaged_textures[1].loadFromFile("data/images/b_block_damaged_1.png") ||
+        !m_damaged_textures[2].loadFromFile("data/images/b_block_damaged_2.png"))
+    {
+        exit(1);
+    }
 }
 
 sf::Vector2f Block::get_pos() const
@@ -61,14 +72,14 @@ bool Block::is_ruined() const
 void Block::heal()
 {
     m_health = m_initial_health;
-    m_body.setFillColor(sf::Color(255, 255, 255));
+    m_body.setTexture(&m_initial_texture);
 }
 
 void Block::reduce_health()
 {
     if (--m_health > 0 && m_health < m_initial_health)
     {
-        m_body.setFillColor(sf::Color(181, 147, 180));
+        m_body.setTexture(&m_damaged_textures[Random::get(0, int(m_damaged_textures.size() - 1))]);
     }
 }
 

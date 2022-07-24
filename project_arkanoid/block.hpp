@@ -2,12 +2,15 @@
 
 #include "SFML/Graphics.hpp"
 
+#include <vector>
+
 class Block
 {
     sf::RenderWindow &m_window;
     sf::RectangleShape m_body;
     sf::Vector2f m_pos;
     sf::Texture m_initial_texture;
+    std::vector<sf::Texture> m_damaged_textures;
     int m_initial_health;
     int m_health;
 

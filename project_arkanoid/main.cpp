@@ -14,11 +14,12 @@ int main()
     sf::Music bg_music;
     bg_music.openFromFile("data/sounds/background.wav");
 
-    sf::SoundBuffer hit, pop, unbreakable, game_won, game_lost;
-    sf::Sound sound_hit, sound_pop, sound_unbreakable, sound_game_won, sound_game_lost;
+    sf::SoundBuffer hit, pop, crack, unbreakable, game_won, game_lost;
+    sf::Sound sound_hit, sound_pop, sound_crack, sound_unbreakable, sound_game_won, sound_game_lost;
 
     if (!hit.loadFromFile("data/sounds/hit.wav") ||
         !pop.loadFromFile("data/sounds/pop.wav") ||
+        !crack.loadFromFile("data/sounds/crack.wav") ||
         !unbreakable.loadFromFile("data/sounds/unbreakable.wav") ||
         !game_won.loadFromFile("data/sounds/game_won.wav") ||
         !game_lost.loadFromFile("data/sounds/game_lost.wav"))
@@ -28,11 +29,12 @@ int main()
 
     sound_hit.setBuffer(hit);
     sound_pop.setBuffer(pop);
+    sound_crack.setBuffer(crack);
     sound_unbreakable.setBuffer(unbreakable);
     sound_game_won.setBuffer(game_won);
     sound_game_lost.setBuffer(game_lost);
 
-    Game game(window, font, bg_music, sound_game_won, sound_game_lost, sound_hit, sound_pop, sound_unbreakable);
+    Game game(window, font, bg_music, sound_game_won, sound_game_lost, sound_hit, sound_pop, sound_crack, sound_unbreakable);
 
     game.run();
 

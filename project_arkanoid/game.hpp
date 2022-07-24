@@ -82,7 +82,7 @@ class Game
 public:
     Game(sf::RenderWindow &window, sf::Font &font,
          sf::Music &music, sf::Sound &sound_won, sf::Sound &sound_lost,
-         sf::Sound &sound_hit, sf::Sound &sound_pop, sf::Sound &sound_unbreakable);
+         sf::Sound &sound_hit, sf::Sound &sound_pop, sf::Sound &sound_crack, sf::Sound &sound_unbreakable);
 
     void run();
 };

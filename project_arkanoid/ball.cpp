@@ -4,9 +4,9 @@
 using Random = effolkronium::random_static;
 
 Ball::Ball(sf::RenderWindow &window, float x, float y,
-           sf::Sound &sound_hit, sf::Sound &sound_pop, sf::Sound &sound_unbreakable)
+           sf::Sound &sound_hit, sf::Sound &sound_pop, sf::Sound &sound_crack, sf::Sound &sound_unbreakable)
     : m_window(window), m_body(m_window.getSize().y / 45), m_x(x), m_y(y), m_missed(false), m_lost(false), m_lives(3), m_lives_remained(3),
-      m_sound_hit(sound_hit), m_sound_pop(sound_pop), m_sound_unbreakable(sound_unbreakable)
+      m_sound_hit(sound_hit), m_sound_pop(sound_pop), m_sound_crack(sound_crack), m_sound_unbreakable(sound_unbreakable)
 {
     m_body.setFillColor(sf::Color::Yellow);
     m_body.setOrigin(m_body.getRadius(), m_body.getRadius());
@@ -18,6 +18,7 @@ Ball::Ball(sf::RenderWindow &window, float x, float y,
 
     m_sound_hit.setLoop(false);
     m_sound_pop.setLoop(false);
+    m_sound_crack.setLoop(false);
     m_sound_unbreakable.setLoop(false);
 }
 
@@ -111,7 +112,7 @@ void Ball::move(float time, Player &player, std::vector<std::unique_ptr<Block>> 
                     }
                     else
                     {
-                        block->is_ruined() ? m_sound_pop.play() : m_sound_hit.play();
+                        block->is_ruined() ? m_sound_pop.play() : m_sound_crack.play();
                     }
                 }
                 else if (block->is_above(curr_pos.x, curr_pos.y) && block->in_rect(new_pos.x, new_pos.y, m_body.getRadius()))
@@ -128,7 +129,7 @@ void Ball::move(float time, Player &player, std::vector<std::unique_ptr<Block>> 
                     }
                     else
                     {
-                        block->is_ruined() ? m_sound_pop.play() : m_sound_hit.play();
+                        block->is_ruined() ? m_sound_pop.play() : m_sound_crack.play();
                     }
                 }
                 else if (block->is_left(curr_pos.x, curr_pos.y) && block->in_rect(new_pos.x, new_pos.y, m_body.getRadius()))
@@ -145,7 +146,7 @@ void Ball::move(float time, Player &player, std::vector<std::unique_ptr<Block>> 
                     }
                     else
                     {
-                        block->is_ruined() ? m_sound_pop.play() : m_sound_hit.play();
+                        block->is_ruined() ? m_sound_pop.play() : m_sound_crack.play();
                     }
                 }
                 else if (block->is_right(curr_pos.x, curr_pos.y) && block->in_rect(new_pos.x, new_pos.y, m_body.getRadius()))
@@ -162,7 +163,7 @@ void Ball::move(float time, Player &player, std::vector<std::unique_ptr<Block>> 
                     }
                     else
                     {
-                        block->is_ruined() ? m_sound_pop.play() : m_sound_hit.play();
+                        block->is_ruined() ? m_sound_pop.play() : m_sound_crack.play();
                     }
                 }
                 // else if (block->in_rect(new_pos.x, new_pos.y, m_body.getRadius()))
@@ -176,7 +177,7 @@ void Ball::move(float time, Player &player, std::vector<std::unique_ptr<Block>> 
                 //     }
                 //     else
                 //     {
-                //         block->is_ruined() ? m_sound_pop.play() : m_sound_hit.play();
+                //         block->is_ruined() ? m_sound_pop.play() : m_sound_crack.play();
                 //     }
                 // }
             }

@@ -11,10 +11,10 @@ using Random = effolkronium::random_static;
 
 Game::Game(sf::RenderWindow &window, sf::Font &font,
            sf::Music &music, sf::Sound &sound_won, sf::Sound &sound_lost,
-           sf::Sound &sound_hit, sf::Sound &sound_pop, sf::Sound &sound_unbreakable)
+           sf::Sound &sound_hit, sf::Sound &sound_pop, sf::Sound &sound_crack, sf::Sound &sound_unbreakable)
     : m_window(window), m_frames_per_sec(sf::seconds(0.01f)), m_total_time(sf::Time::Zero), m_curr_level(0),
       m_player(m_window, m_window.getSize().x / 2, m_window.getSize().y - m_player.get_size().y - 30),
-      m_ball(m_window, m_window.getSize().x / 2, m_player.get_pos().y - m_player.get_size().y * 2, sound_hit, sound_pop, sound_unbreakable),
+      m_ball(m_window, m_window.getSize().x / 2, m_player.get_pos().y - m_player.get_size().y * 2, sound_hit, sound_pop, sound_crack, sound_unbreakable),
       m_music(music),
       m_sound_game_won(sound_won),
       m_sound_game_lost(sound_lost),
