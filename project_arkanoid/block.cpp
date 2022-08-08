@@ -4,8 +4,12 @@
 
 using Random = effolkronium::random_static;
 
-Block::Block(sf::RenderWindow &window, sf::Vector2f &size, sf::Vector2f &pos, sf::Texture &texture, int health)
-    : m_window(window), m_body(size), m_pos(pos), m_initial_texture(texture), m_damaged_textures(3), m_initial_health(health), m_health(health)
+Block::Block(void *game, sf::RenderWindow &window,
+             sf::Vector2f &size, sf::Vector2f &pos, sf::Texture &texture, int health,
+             bool is_bonus, void start_magic(void *, void *), void end_magic(void *))
+    : m_game(game), m_window(window),
+      m_body(size), m_pos(pos), m_initial_texture(texture), m_damaged_textures(3), m_initial_health(health), m_current_health(health),
+      m_is_bonus(is_bonus), ptr_to_magic_start(start_magic), ptr_to_magic_end(end_magic)
 {
     m_body.setTexture(&m_initial_texture);
     m_body.setPosition(m_pos);
@@ -66,26 +70,50 @@ bool Block::in_rect(float tx, float ty, float radius) const
 
 bool Block::is_ruined() const
 {
-    return !m_health;
+    return !m_current_health;
 }
 
 void Block::heal()
 {
-    m_health = m_initial_health;
+    m_current_health = m_initial_health;
     m_body.setTexture(&m_initial_texture);
 }
 
 void Block::reduce_health()
 {
-    if (--m_health > 0 && m_health < m_initial_health)
+    if (--m_current_health > 0 && m_current_health < m_initial_health)
     {
         m_body.setTexture(&m_damaged_textures[Random::get(0, int(m_damaged_textures.size() - 1))]);
+    }
+
+    if (m_current_health == 0)
+    {
+        if (ptr_to_magic_start)
+        {
+            ptr_to_magic_start(m_game, reinterpret_cast<void *>(ptr_to_magic_end));
+        }
     }
 }
 
 int Block::get_initial_health() const
 {
     return m_initial_health;
+}
+
+void Block::set_health(int health)
+{
+    m_current_health = health;
+}
+
+void Block::set_texture(sf::Texture &texture)
+{
+    m_initial_texture = texture;
+    m_body.setTexture(&m_initial_texture);
+}
+
+bool Block::is_bonus() const
+{
+    return m_is_bonus;
 }
 
 void Block::draw()

@@ -9,15 +9,107 @@
 
 using Random = effolkronium::random_static;
 
+namespace
+{
+    void increase_racket_size(void *ptr, void *ptr_2)
+    {
+        Game *ptr_to_game = reinterpret_cast<Game *>(ptr);
+        ptr_to_game->increase_racket_size();
+        ptr_to_game->set_magic_duration(30);
+        ptr_to_game->set_ptr_end_magic(ptr_2);
+    }
+
+    void restore_racket_size(void *ptr)
+    {
+        Game *ptr_to_game = reinterpret_cast<Game *>(ptr);
+        ptr_to_game->restore_racket_size();
+    }
+
+    void change_blocks_type(void *ptr, void *ptr_2)
+    {
+        Game *ptr_to_game = reinterpret_cast<Game *>(ptr);
+
+        sf::Texture texture;
+        texture.loadFromFile("data/images/a_block.png");
+
+        ptr_to_game->change_blocks_type(texture);
+        ptr_to_game->set_magic_duration(30);
+        ptr_to_game->set_ptr_end_magic(ptr_2);
+    }
+
+    void restore_block_type(void *ptr)
+    {
+        Game *ptr_to_game = reinterpret_cast<Game *>(ptr);
+
+        sf::Texture texture;
+        texture.loadFromFile("data/images/b_block.png");
+
+        ptr_to_game->restore_block_type(texture);
+    }
+
+    void change_level(void *ptr, void *ptr_2)
+    {
+        Game *ptr_to_game = reinterpret_cast<Game *>(ptr);
+        ptr_to_game->change_level();
+    }
+
+    std::vector<void (*)(void *, void *)> start_magic = {nullptr, nullptr, nullptr, increase_racket_size, change_blocks_type, change_level};
+    std::vector<void (*)(void *)> end_magic = {nullptr, nullptr, nullptr, restore_racket_size, restore_block_type, nullptr};
+}
+
+void Game::increase_racket_size()
+{
+    m_player.increase_size();
+}
+
+void Game::restore_racket_size()
+{
+    m_player.restore_size();
+}
+
+void Game::change_blocks_type(sf::Texture &texture)
+{
+    for (auto &block : m_blocks)
+    {
+        if (block->get_initial_health() == 2)
+        {
+            block->set_health(1);
+            block->set_texture(texture);
+        }
+    }
+}
+
+void Game::restore_block_type(sf::Texture &texture)
+{
+    for (auto &block : m_blocks)
+    {
+        if (block->get_initial_health() == 2 && !block->is_ruined())
+        {
+            block->set_health(2);
+            block->set_texture(texture);
+        }
+    }
+}
+
+void Game::change_level()
+{
+    m_game_state = GameState::Won;
+
+    m_music.stop();
+    m_sound_game_won.play();
+}
+
 Game::Game(sf::RenderWindow &window, sf::Font &font,
            sf::Music &music, sf::Sound &sound_won, sf::Sound &sound_lost,
-           sf::Sound &sound_hit, sf::Sound &sound_pop, sf::Sound &sound_crack, sf::Sound &sound_unbreakable)
+           sf::Sound &sound_hit, sf::Sound &sound_pop, sf::Sound &sound_crack, sf::Sound &sound_unbreakable,
+           sf::Sound &sound_bonus_start, sf::Sound &sound_bonus_end)
     : m_window(window), m_frames_per_sec(sf::seconds(0.01f)), m_total_time(sf::Time::Zero), m_curr_level(0),
       m_player(m_window, m_window.getSize().x / 2, m_window.getSize().y - m_player.get_size().y - 30),
-      m_ball(m_window, m_window.getSize().x / 2, m_player.get_pos().y - m_player.get_size().y * 2, sound_hit, sound_pop, sound_crack, sound_unbreakable),
+      m_ball(m_window, m_window.getSize().x / 2, m_player.get_pos().y - m_player.get_size().y * 2, sound_hit, sound_pop, sound_crack, sound_unbreakable, sound_bonus_start),
       m_music(music),
       m_sound_game_won(sound_won),
       m_sound_game_lost(sound_lost),
+      m_sound_bonus_end(sound_bonus_end),
       m_message_level(m_text_level, font),
       m_message_game_state(m_text_won, font),
       m_message_lives(m_text_lives, font),
@@ -145,14 +237,24 @@ void Game::load_blocks()
 {
     sf::Vector2f block_size(m_window.getSize().x / m_levels[m_curr_level][0].size(), m_window.getSize().y / m_levels[m_curr_level].size());
 
-    sf::Texture a_block, b_block, c_block;
+    sf::Texture a_block, b_block, c_block, bonus_block;
 
-    if (!a_block.loadFromFile("data/images/a_block.png") || !b_block.loadFromFile("data/images/b_block.png") || !c_block.loadFromFile("data/images/c_block.png"))
+    if (!a_block.loadFromFile("data/images/a_block.png") ||
+        !b_block.loadFromFile("data/images/b_block.png") ||
+        !c_block.loadFromFile("data/images/c_block.png") ||
+        !bonus_block.loadFromFile("data/images/bonus_block.png"))
     {
         exit(1);
     }
 
-    std::unordered_map<char, std::pair<sf::Texture, int>> block_types = {{'a', {a_block, 1}}, {'b', {b_block, 2}}, {'c', {c_block, -1}}};
+    std::unordered_map<char, std::pair<sf::Texture, int>> block_types = {{'a', {a_block, 1}},
+                                                                         {'b', {b_block, 2}},
+                                                                         {'c', {c_block, -1}},
+                                                                         {'d', {bonus_block, 1}},
+                                                                         {'e', {bonus_block, 1}},
+                                                                         {'f', {bonus_block, 1}}};
+
+    std::vector<bool> bonuses = {false, false, false, true, true, true};
 
     for (size_t i = 0; i < m_levels[m_curr_level].size(); i++)
     {
@@ -164,8 +266,9 @@ void Game::load_blocks()
             {
                 std::pair block_type = block_types[type];
                 sf::Vector2f pos(j * block_size.x + 2, i * block_size.y + 2);
+                int index = type - 'a';
 
-                m_blocks.push_back(std::make_unique<Block>(m_window, block_size, pos, block_type.first, block_type.second));
+                m_blocks.push_back(std::make_unique<Block>(this, m_window, block_size, pos, block_type.first, block_type.second, bonuses[index], start_magic[index], end_magic[index]));
             }
         }
     }
@@ -242,6 +345,17 @@ void Game::run()
             if (m_game_started && m_start_moving && m_game_state != GameState::Won)
             {
                 m_ball.move(m_frames_per_sec.asSeconds(), m_player, m_blocks);
+            }
+
+            if (m_magic_time > sf::seconds(0))
+            {
+                m_magic_time -= m_frames_per_sec;
+
+                if (m_magic_time <= sf::seconds(0))
+                {
+                    m_ptr_end_magic(this);
+                    m_sound_bonus_end.play();
+                }
             }
         }
 

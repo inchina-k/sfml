@@ -33,6 +33,7 @@ class Game
 
     sf::Music &m_music;
     sf::Sound &m_sound_game_won, &m_sound_game_lost;
+    sf::Sound &m_sound_bonus_end;
     bool m_play = false;
 
     enum class GameState
@@ -56,6 +57,9 @@ class Game
 
     std::string m_text_lives = "Lives: ";
     Message m_message_lives;
+
+    sf::Time m_magic_time;
+    void (*m_ptr_end_magic)(void *);
 
     // ---animation---
     std::vector<std::unique_ptr<Star>> m_stars;
@@ -82,7 +86,28 @@ class Game
 public:
     Game(sf::RenderWindow &window, sf::Font &font,
          sf::Music &music, sf::Sound &sound_won, sf::Sound &sound_lost,
-         sf::Sound &sound_hit, sf::Sound &sound_pop, sf::Sound &sound_crack, sf::Sound &sound_unbreakable);
+         sf::Sound &sound_hit, sf::Sound &sound_pop, sf::Sound &sound_crack, sf::Sound &sound_unbreakable,
+         sf::Sound &sound_bonus_start, sf::Sound &sound_bonus_end);
 
     void run();
+
+    void increase_racket_size();
+
+    void restore_racket_size();
+
+    void change_blocks_type(sf::Texture &texture);
+
+    void restore_block_type(sf::Texture &texture);
+
+    void set_magic_duration(int time)
+    {
+        m_magic_time = sf::seconds(time);
+    }
+
+    void set_ptr_end_magic(void *ptr)
+    {
+        m_ptr_end_magic = reinterpret_cast<void (*)(void *)>(ptr);
+    }
+
+    void change_level();
 };

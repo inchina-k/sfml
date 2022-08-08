@@ -4,9 +4,9 @@
 using Random = effolkronium::random_static;
 
 Ball::Ball(sf::RenderWindow &window, float x, float y,
-           sf::Sound &sound_hit, sf::Sound &sound_pop, sf::Sound &sound_crack, sf::Sound &sound_unbreakable)
+           sf::Sound &sound_hit, sf::Sound &sound_pop, sf::Sound &sound_crack, sf::Sound &sound_unbreakable, sf::Sound &sound_bonus_start)
     : m_window(window), m_body(m_window.getSize().y / 45), m_x(x), m_y(y), m_missed(false), m_lost(false), m_lives(3), m_lives_remained(3),
-      m_sound_hit(sound_hit), m_sound_pop(sound_pop), m_sound_crack(sound_crack), m_sound_unbreakable(sound_unbreakable)
+      m_sound_hit(sound_hit), m_sound_pop(sound_pop), m_sound_crack(sound_crack), m_sound_unbreakable(sound_unbreakable), m_sound_bonus_start(sound_bonus_start)
 {
     m_body.setFillColor(sf::Color::Yellow);
     m_body.setOrigin(m_body.getRadius(), m_body.getRadius());
@@ -110,6 +110,10 @@ void Ball::move(float time, Player &player, std::vector<std::unique_ptr<Block>> 
                     {
                         m_sound_unbreakable.play();
                     }
+                    else if (block->is_bonus())
+                    {
+                        m_sound_bonus_start.play();
+                    }
                     else
                     {
                         block->is_ruined() ? m_sound_pop.play() : m_sound_crack.play();
@@ -126,6 +130,10 @@ void Ball::move(float time, Player &player, std::vector<std::unique_ptr<Block>> 
                     if (block->get_initial_health() == -1)
                     {
                         m_sound_unbreakable.play();
+                    }
+                    else if (block->is_bonus())
+                    {
+                        m_sound_bonus_start.play();
                     }
                     else
                     {
@@ -144,6 +152,10 @@ void Ball::move(float time, Player &player, std::vector<std::unique_ptr<Block>> 
                     {
                         m_sound_unbreakable.play();
                     }
+                    else if (block->is_bonus())
+                    {
+                        m_sound_bonus_start.play();
+                    }
                     else
                     {
                         block->is_ruined() ? m_sound_pop.play() : m_sound_crack.play();
@@ -161,6 +173,10 @@ void Ball::move(float time, Player &player, std::vector<std::unique_ptr<Block>> 
                     {
                         m_sound_unbreakable.play();
                     }
+                    else if (block->is_bonus())
+                    {
+                        m_sound_bonus_start.play();
+                    }
                     else
                     {
                         block->is_ruined() ? m_sound_pop.play() : m_sound_crack.play();
@@ -168,12 +184,18 @@ void Ball::move(float time, Player &player, std::vector<std::unique_ptr<Block>> 
                 }
                 // else if (block->in_rect(new_pos.x, new_pos.y, m_body.getRadius()))
                 // {
-                //     m_speed.x = -m_speed.x + Random::get(-1.5, 1.5);
-                //     m_speed.y = -m_speed.y + Random::get(-1.5, 1.5);
-                //
+                //     m_speed.x = -m_speed.x;
+                //     m_speed.y = -m_speed.y;
+
+                //     block->reduce_health();
+
                 //     if (block->get_initial_health() == -1)
                 //     {
                 //         m_sound_unbreakable.play();
+                //     }
+                //     else if (block->is_bonus())
+                //     {
+                //         m_sound_bonus_start.play();
                 //     }
                 //     else
                 //     {

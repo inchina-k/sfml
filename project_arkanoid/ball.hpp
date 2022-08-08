@@ -22,13 +22,13 @@ class Ball
     int m_lives;
     int m_lives_remained;
 
-    sf::Sound &m_sound_hit, &m_sound_pop, &m_sound_crack, &m_sound_unbreakable;
+    sf::Sound &m_sound_hit, &m_sound_pop, &m_sound_crack, &m_sound_unbreakable, &m_sound_bonus_start;
 
     void set_speed();
 
 public:
     Ball(sf::RenderWindow &window, float x, float y,
-         sf::Sound &sound_hit, sf::Sound &sound_pop, sf::Sound &sound_crack, sf::Sound &sound_unbreakable);
+         sf::Sound &sound_hit, sf::Sound &sound_pop, sf::Sound &sound_crack, sf::Sound &sound_unbreakable, sf::Sound &sound_bonus_start);
 
     void set_pos(float x, float y);
 
