@@ -419,6 +419,7 @@ void Game::run()
         else
         {
             m_music.setVolume(15);
+            m_window.setMouseCursorVisible(false);
         }
 
         std::string level = m_text_level + m_titles[m_curr_level];
