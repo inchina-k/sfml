@@ -72,36 +72,38 @@ sf::Vector2f Player::get_size() const
 
 void Player::move(sf::Vector2f &top, sf::Vector2f &bottom, float sz)
 {
+    int step = m_size / 20;
+
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Down))
     {
         set_state(Player::State::GoDown);
-        if (m_pos.y + m_size / 2 + 2 <= bottom.y + sz)
+        if (m_pos.y + m_size / 2 + step <= bottom.y + sz)
         {
-            m_pos.y += 2;
+            m_pos.y += step;
         }
     }
     else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Up))
     {
         set_state(Player::State::GoUp);
-        if (m_pos.y - m_size / 2 - 2 >= top.y)
+        if (m_pos.y - m_size / 2 - step >= top.y)
         {
-            m_pos.y -= 2;
+            m_pos.y -= step;
         }
     }
     else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Left))
     {
         set_state(Player::State::GoLeft);
-        if (m_pos.x - m_size / 2 - 2 >= top.x)
+        if (m_pos.x - m_size / 2 - step >= top.x)
         {
-            m_pos.x -= 2;
+            m_pos.x -= step;
         }
     }
     else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Right))
     {
         set_state(Player::State::GoRight);
-        if (m_pos.x + m_size / 2 + 2 <= bottom.x + sz)
+        if (m_pos.x + m_size / 2 + step <= bottom.x + sz)
         {
-            m_pos.x += 2;
+            m_pos.x += step;
         }
     }
     else if (m_curr_state == Player::State::GoDown)
