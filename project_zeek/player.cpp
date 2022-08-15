@@ -70,40 +70,70 @@ sf::Vector2f Player::get_size() const
     return size;
 }
 
-void Player::move(sf::Vector2f &top, sf::Vector2f &bottom, float sz)
+void Player::move(sf::Vector2f &top, sf::Vector2f &bottom, float sz, std::vector<std::string> &field, float x, float y)
 {
     int step = m_size / 20;
 
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Down))
     {
         set_state(Player::State::GoDown);
-        if (m_pos.y + m_size / 2 + step <= bottom.y + sz)
+
+        float new_pos = m_pos.y + m_size / 2 + step;
+        if (new_pos <= bottom.y + sz)
         {
-            m_pos.y += step;
+            float row = (new_pos - y) / sz;
+            float col = (m_pos.x - x) / sz;
+            if (row < field.size() && field[row][col] != 'w')
+            {
+                m_pos.y += step;
+            }
         }
+
+        std::cout << (m_pos.x - x) / sz << ' ' << (new_pos - y) / sz << std::endl;
     }
     else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Up))
     {
         set_state(Player::State::GoUp);
-        if (m_pos.y - m_size / 2 - step >= top.y)
+
+        float new_pos = m_pos.y - m_size / 2 - step;
+        if (new_pos >= top.y)
         {
-            m_pos.y -= step;
+            float row = (new_pos - y) / sz;
+            float col = (m_pos.x - x) / sz;
+            if (row >= 0 && field[row][col] != 'w')
+            {
+                m_pos.y -= step;
+            }
         }
     }
     else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Left))
     {
         set_state(Player::State::GoLeft);
-        if (m_pos.x - m_size / 2 - step >= top.x)
+
+        float new_pos = m_pos.x - m_size / 2 - step;
+        if (new_pos >= top.x)
         {
-            m_pos.x -= step;
+            float row = (m_pos.y - y) / sz;
+            float col = (new_pos - x) / sz;
+            if (col >= 0 && field[row][col] != 'w')
+            {
+                m_pos.x -= step;
+            }
         }
     }
     else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Right))
     {
         set_state(Player::State::GoRight);
-        if (m_pos.x + m_size / 2 + step <= bottom.x + sz)
+
+        float new_pos = m_pos.x + m_size / 2 + step;
+        if (new_pos <= bottom.x + sz)
         {
-            m_pos.x += step;
+            float row = (m_pos.y - y) / sz;
+            float col = (new_pos - x) / sz;
+            if (col < field.front().size() && field[row][col] != 'w')
+            {
+                m_pos.x += step;
+            }
         }
     }
     else if (m_curr_state == Player::State::GoDown)

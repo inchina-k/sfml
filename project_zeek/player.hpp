@@ -44,6 +44,6 @@ public:
     sf::Vector2f get_pos() const;
     void set_size(float size);
     sf::Vector2f get_size() const;
-    void move(sf::Vector2f &top, sf::Vector2f &bottom, float sz);
+    void move(sf::Vector2f &top, sf::Vector2f &bottom, float sz, std::vector<std::string> &field, float x, float y);
     void draw();
 };

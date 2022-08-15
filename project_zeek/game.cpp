@@ -207,6 +207,13 @@ void Game::load_field()
 
 void Game::run()
 {
+    sf::Vector2f top = m_cells.front()->get_pos();
+    sf::Vector2f bottom = m_cells.back()->get_pos();
+
+    float size = m_cells.back()->get_size().x;
+    float x = m_window.getSize().x / 2 - ((m_levels[m_curr_level][0].size() / 2.0f) * size);
+    float y = m_window.getSize().y / 2 - ((m_levels[m_curr_level].size() / 2.0f) * size);
+
     while (m_window.isOpen())
     {
         sf::Event event;
@@ -217,9 +224,7 @@ void Game::run()
                 m_window.close();
             }
 
-            sf::Vector2f top = m_cells.front()->get_pos();
-            sf::Vector2f bottom = m_cells.back()->get_pos();
-            m_player.move(top, bottom, m_cells.back()->get_size().x);
+            m_player.move(top, bottom, size, m_levels[m_curr_level], x, y);
         }
 
         m_window.clear();
