@@ -11,6 +11,7 @@
 
 #include "player.hpp"
 #include "cell.hpp"
+#include "message.hpp"
 
 class Game
 {
@@ -97,16 +98,22 @@ class Game
 
     std::vector<std::unique_ptr<GameObject>> m_objects;
     std::vector<std::unique_ptr<Cell>> m_cells;
+    sf::RectangleShape m_boundaries;
 
     int m_total_bonuses = 0;
     int m_collected_bonuses = 0;
+
+    std::string m_text_level = "level: ";
+    std::string m_text_points = "points: ";
+    Message m_message_curr_level;
+    Message m_message_points;
 
     bool load_levels();
     void load_field();
     void update_objects(float x, float y, float size);
 
 public:
-    Game(sf::RenderWindow &window);
+    Game(sf::RenderWindow &window, sf::Font &font);
 
     void run();
 };

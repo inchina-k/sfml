@@ -7,7 +7,13 @@ int main()
     sf::RenderWindow window(sf::VideoMode::getDesktopMode(), "Doodly", sf::Style::Fullscreen);
     window.setVerticalSyncEnabled(true);
 
-    Game game(window);
+    sf::Font font;
+    if (!font.loadFromFile("data/fonts/PressStart2P-Regular.ttf"))
+    {
+        exit(1);
+    }
+
+    Game game(window, font);
 
     game.run();
 }

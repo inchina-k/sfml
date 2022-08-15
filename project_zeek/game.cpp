@@ -3,8 +3,9 @@
 #include <iostream>
 #include <unordered_map>
 
-Game::Game(sf::RenderWindow &window)
-    : m_window(window), m_curr_level(0), m_player(window)
+Game::Game(sf::RenderWindow &window, sf::Font &font)
+    : m_window(window), m_curr_level(0), m_player(window),
+      m_message_curr_level(m_text_level, font), m_message_points(m_text_points, font)
 {
     if (!load_levels())
     {
@@ -12,6 +13,14 @@ Game::Game(sf::RenderWindow &window)
     }
 
     load_field();
+
+    float size = m_window.getSize().x / 47;
+    sf::Text::Style style = sf::Text::Style::Regular;
+    sf::Color color = sf::Color::White;
+    int thickness = 2;
+
+    m_message_curr_level.set_properties(size, style, color, color, thickness);
+    m_message_points.set_properties(size, style, color, color, thickness);
 }
 
 Game::GameObject::GameObject(Game &game, sf::Texture &texture, int row, int col)
@@ -154,6 +163,12 @@ void Game::load_field()
     float y = m_window.getSize().y / 2 - ((m_levels[m_curr_level].size() / 2.0f) * cell_size);
     sf::Vector2f pos(x, y);
 
+    m_boundaries.setFillColor(sf::Color::Transparent);
+    m_boundaries.setOutlineColor(sf::Color::White);
+    m_boundaries.setOutlineThickness(cell_size / 20);
+    m_boundaries.setPosition(x, y);
+    m_boundaries.setSize(sf::Vector2f(cell_size * m_levels.front().size(), cell_size * m_levels.front().size()));
+
     sf::Texture safe_cell, wall, bonus, fruit, ball, hazard;
 
     if (!safe_cell.loadFromFile("data/images/safe_cell.png") ||
@@ -258,9 +273,22 @@ void Game::run()
             m_player.move(top, bottom, size, m_levels[m_curr_level], x, y);
 
             update_objects(x, y, size);
+
+            std::string level = m_text_level + m_titles[m_curr_level];
+            m_message_curr_level.set_str(level);
+            m_message_curr_level.set_pos(size * 2, size / 1.5);
+
+            std::string points = m_text_points + std::to_string(m_collected_bonuses);
+            m_message_points.set_str(points);
+            m_message_points.set_pos(m_window.getSize().x - size * 2, size / 1.5);
         }
 
         m_window.clear();
+
+        m_message_curr_level.show_message(m_window);
+        m_message_points.show_message(m_window);
+
+        m_window.draw(m_boundaries);
 
         for (auto &cell : m_cells)
         {
