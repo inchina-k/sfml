@@ -70,71 +70,86 @@ sf::Vector2f Player::get_size() const
     return size;
 }
 
+void Player::move_down(float step, sf::Vector2f &bottom, float sz, std::vector<std::string> &field, float x, float y)
+{
+    float new_pos = m_pos.y + m_size / 2 + step;
+    if (new_pos < bottom.y + sz)
+    {
+        float row = (new_pos - y) / sz;
+        float col = (m_pos.x - x) / sz;
+
+        if (row < field.size() && field[row][col] != 'w')
+        {
+            m_pos.y += step + 1;
+        }
+    }
+}
+
+void Player::move_up(float step, sf::Vector2f &top, float sz, std::vector<std::string> &field, float x, float y)
+{
+    float new_pos = m_pos.y - m_size / 2 - step;
+    if (new_pos > top.y)
+    {
+        float row = (new_pos - y) / sz;
+        float col = (m_pos.x - x) / sz;
+        if (row >= 0 && field[row][col] != 'w')
+        {
+            m_pos.y -= step + 1;
+        }
+    }
+}
+
+void Player::move_left(float step, sf::Vector2f &top, float sz, std::vector<std::string> &field, float x, float y)
+{
+    float new_pos = m_pos.x - m_size / 2 - step;
+    if (new_pos > top.x)
+    {
+        float row = (m_pos.y - y) / sz;
+        float col = (new_pos - x) / sz;
+        if (col >= 0 && field[row][col] != 'w')
+        {
+            m_pos.x -= step + 1;
+        }
+    }
+}
+
+void Player::move_right(float step, sf::Vector2f &bottom, float sz, std::vector<std::string> &field, float x, float y)
+{
+    float new_pos = m_pos.x + m_size / 2 + step;
+    if (new_pos < bottom.x + sz)
+    {
+        float row = (m_pos.y - y) / sz;
+        float col = (new_pos - x) / sz;
+        if (col < field.front().size() && field[row][col] != 'w')
+        {
+            m_pos.x += step + 1;
+        }
+    }
+}
+
 void Player::move(sf::Vector2f &top, sf::Vector2f &bottom, float sz, std::vector<std::string> &field, float x, float y)
 {
-    int step = m_size / 20;
+    float step = m_size / 20;
 
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Down))
     {
         set_state(Player::State::GoDown);
-
-        float new_pos = m_pos.y + m_size / 2 + step;
-        if (new_pos <= bottom.y + sz)
-        {
-            float row = (new_pos - y) / sz;
-            float col = (m_pos.x - x) / sz;
-            if (row < field.size() && field[row][col] != 'w')
-            {
-                m_pos.y += step;
-            }
-        }
-
-        std::cout << (m_pos.x - x) / sz << ' ' << (new_pos - y) / sz << std::endl;
+        move_down(step, bottom, sz, field, x, y);
     }
     else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Up))
     {
         set_state(Player::State::GoUp);
-
-        float new_pos = m_pos.y - m_size / 2 - step;
-        if (new_pos >= top.y)
-        {
-            float row = (new_pos - y) / sz;
-            float col = (m_pos.x - x) / sz;
-            if (row >= 0 && field[row][col] != 'w')
-            {
-                m_pos.y -= step;
-            }
-        }
+        move_up(step, top, sz, field, x, y);
     }
     else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Left))
     {
         set_state(Player::State::GoLeft);
-
-        float new_pos = m_pos.x - m_size / 2 - step;
-        if (new_pos >= top.x)
-        {
-            float row = (m_pos.y - y) / sz;
-            float col = (new_pos - x) / sz;
-            if (col >= 0 && field[row][col] != 'w')
-            {
-                m_pos.x -= step;
-            }
-        }
+        move_left(step, top, sz, field, x, y);
     }
     else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Right))
     {
         set_state(Player::State::GoRight);
-
-        float new_pos = m_pos.x + m_size / 2 + step;
-        if (new_pos <= bottom.x + sz)
-        {
-            float row = (m_pos.y - y) / sz;
-            float col = (new_pos - x) / sz;
-            if (col < field.front().size() && field[row][col] != 'w')
-            {
-                m_pos.x += step;
-            }
-        }
+        move_right(step, bottom, sz, field, x, y);
     }
     else if (m_curr_state == Player::State::GoDown)
     {

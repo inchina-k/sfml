@@ -20,7 +20,6 @@ Game::GameObject::GameObject(Game &game, sf::Texture &texture, int row, int col)
     m_body.setTexture(m_texture);
     m_body.scale(game.m_cells.front()->get_size().x / m_texture.getSize().x,
                  game.m_cells.front()->get_size().y / m_texture.getSize().y);
-    //  m_body.setOrigin(m_body.getLocalBounds().width / 2, m_body.getLocalBounds().height / 2);
 }
 
 Game::Bonus::Bonus(Game &game, sf::Texture &texture, int row, int col)
@@ -28,9 +27,22 @@ Game::Bonus::Bonus(Game &game, sf::Texture &texture, int row, int col)
 {
 }
 
+bool Game::Bonus::collected()
+{
+    return m_collected;
+}
+
+void Game::Bonus::set_collected(bool b)
+{
+    m_collected = b;
+}
+
 void Game::Bonus::draw()
 {
-    m_game.m_window.draw(m_body);
+    if (!collected())
+    {
+        m_game.m_window.draw(m_body);
+    }
 }
 
 Game::Hazard::Hazard(Game &game, sf::Texture &texture, int row, int col)
@@ -179,6 +191,7 @@ void Game::load_field()
                 {
                     m_objects.push_back(std::make_unique<Bonus>(*this, cell_types[type], i, j));
                     m_objects.back()->set_pos(pos);
+                    ++m_total_bonuses;
                 }
                 else if (type == 'h')
                 {
@@ -205,6 +218,24 @@ void Game::load_field()
     }
 }
 
+void Game::update_objects(float x, float y, float size)
+{
+    for (auto &object : m_objects)
+    {
+        if (int((m_player.get_pos().x - x) / size) == object->get_col() && int((m_player.get_pos().y - y) / size) == object->get_row())
+        {
+            if (auto ob = dynamic_cast<Bonus *>(object.get()))
+            {
+                if (!ob->collected())
+                {
+                    ob->set_collected(true);
+                    ++m_collected_bonuses;
+                }
+            }
+        }
+    }
+}
+
 void Game::run()
 {
     sf::Vector2f top = m_cells.front()->get_pos();
@@ -225,6 +256,8 @@ void Game::run()
             }
 
             m_player.move(top, bottom, size, m_levels[m_curr_level], x, y);
+
+            update_objects(x, y, size);
         }
 
         m_window.clear();

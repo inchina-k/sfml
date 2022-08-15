@@ -32,6 +32,16 @@ class Game
         {
             m_body.setPosition(pos);
         }
+
+        int get_row()
+        {
+            return m_row;
+        }
+
+        int get_col()
+        {
+            return m_col;
+        }
     };
 
     struct IMovable
@@ -41,9 +51,13 @@ class Game
 
     class Bonus : public GameObject
     {
+        bool m_collected = false;
+
     public:
         Bonus(Game &game, sf::Texture &texture, int row, int col);
 
+        bool collected();
+        void set_collected(bool b);
         void draw() override;
     };
 
@@ -84,8 +98,12 @@ class Game
     std::vector<std::unique_ptr<GameObject>> m_objects;
     std::vector<std::unique_ptr<Cell>> m_cells;
 
+    int m_total_bonuses = 0;
+    int m_collected_bonuses = 0;
+
     bool load_levels();
     void load_field();
+    void update_objects(float x, float y, float size);
 
 public:
     Game(sf::RenderWindow &window);

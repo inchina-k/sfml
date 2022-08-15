@@ -36,6 +36,10 @@ class Player
 
     void set_state(State state);
     void load();
+    void move_down(float step, sf::Vector2f &bottom, float sz, std::vector<std::string> &field, float x, float y);
+    void move_up(float step, sf::Vector2f &top, float sz, std::vector<std::string> &field, float x, float y);
+    void move_left(float step, sf::Vector2f &top, float sz, std::vector<std::string> &field, float x, float y);
+    void move_right(float step, sf::Vector2f &bottom, float sz, std::vector<std::string> &field, float x, float y);
 
 public:
     Player(sf::RenderWindow &window);
