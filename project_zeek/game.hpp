@@ -110,7 +110,7 @@ class Game
 
     bool load_levels();
     void load_field();
-    void update_objects(float x, float y, float size);
+    void update_objects(float x, float y);
 
 public:
     Game(sf::RenderWindow &window, sf::Font &font);

@@ -233,11 +233,11 @@ void Game::load_field()
     }
 }
 
-void Game::update_objects(float x, float y, float size)
+void Game::update_objects(float x, float y)
 {
     for (auto &object : m_objects)
     {
-        if (int((m_player.get_pos().x - x) / size) == object->get_col() && int((m_player.get_pos().y - y) / size) == object->get_row())
+        if (int((m_player.get_pos().x - x) / m_player.get_size().x) == object->get_col() && int((m_player.get_pos().y - y) / m_player.get_size().y) == object->get_row())
         {
             if (auto ob = dynamic_cast<Bonus *>(object.get()))
             {
@@ -270,9 +270,7 @@ void Game::run()
                 m_window.close();
             }
 
-            m_player.move(top, bottom, size, m_levels[m_curr_level], x, y);
-
-            update_objects(x, y, size);
+            update_objects(x, y);
 
             std::string level = m_text_level + m_titles[m_curr_level];
             m_message_curr_level.set_str(level);
@@ -300,6 +298,7 @@ void Game::run()
             object->draw();
         }
 
+        m_player.move(top, bottom, size, m_levels[m_curr_level], x, y);
         m_player.draw();
 
         m_window.display();

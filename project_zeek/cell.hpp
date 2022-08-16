@@ -16,7 +16,5 @@ public:
 
     sf::Vector2f get_size() const;
 
-    bool in_rect(float tx, float ty, float radius) const;
-
     void draw();
 };

@@ -28,6 +28,9 @@ class Player
     State m_curr_state = State::StandDown;
     sf::Vector2f m_pos;
     float m_size;
+    static constexpr int m_max_counter = 15;
+    int m_num_of_steps;
+    float m_step = 0;
 
     int m_x = 0,
         m_y = 0;

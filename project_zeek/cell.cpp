@@ -17,14 +17,6 @@ sf::Vector2f Cell::get_size() const
     return m_body.getSize();
 }
 
-bool Cell::in_rect(float tx, float ty, float radius) const
-{
-    return tx >= m_body.getPosition().x - radius &&
-           tx <= m_body.getPosition().x + m_body.getSize().x + radius &&
-           ty <= m_body.getPosition().y + m_body.getSize().y + radius &&
-           ty >= m_body.getPosition().y - radius;
-}
-
 void Cell::draw()
 {
     m_window.draw(m_body);
