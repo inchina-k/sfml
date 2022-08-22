@@ -9,84 +9,153 @@
 #include <memory>
 #include <iostream>
 
-#include "player.hpp"
 #include "cell.hpp"
 #include "message.hpp"
 
 class Game
 {
+    /* ---------------PLAYER--------------- */
+
+    class Player
+    {
+        enum class State
+        {
+            Go,
+            Stand
+        };
+
+        Game &m_game;
+        sf::Texture m_texture;
+        std::vector<std::vector<std::unique_ptr<sf::Sprite>>> m_frames;
+        int m_counter;
+        size_t m_frame_index;
+        size_t m_anim_index;
+        State m_curr_state = State::Stand;
+        sf::Vector2f m_pos;
+        sf::Vector2f m_dir;
+        float m_size;
+
+        int m_row, m_col;
+        float m_w = 0, m_h = 0;
+
+        static constexpr int m_max_counter = 15;
+        int m_num_of_steps;
+        float m_step = 0;
+
+        void load();
+        void switch_command();
+        bool can_move(int dr, int dc);
+        void move();
+
+    public:
+        Player(Game &game);
+
+        void set_pos(sf::Vector2f &pos, int row, int col);
+        sf::Vector2f get_pos() const;
+        sf::Vector2i get_coords() const;
+        void set_size(float size);
+        sf::Vector2f get_size() const;
+        void draw();
+    };
+
+    /* ---------------GAME_OBJECTS--------------- */
+
     class GameObject
     {
     protected:
         Game &m_game;
         sf::Texture m_texture;
         sf::Sprite m_body;
+        sf::Vector2f m_pos;
         int m_row = 0, m_col = 0;
-        float m_x = 0, m_y = 0;
+        bool m_exists;
+
+        /* ---------MOVE--------- */
+        enum class State
+        {
+            Go,
+            Stand
+        };
+
+        State m_curr_state = State::Stand;
+        static constexpr int m_max_counter = 15;
+        int m_num_of_steps;
+        float m_step = 0;
+        int m_frame_index = 0;
+        int m_anim_index = 0;
+        int m_counter = 0;
+        sf::Vector2f m_dir;
 
     public:
-        GameObject(Game &game, sf::Texture &texture, int row, int col);
+        GameObject(Game &game, sf::Texture &texture, sf::Vector2f &pos, int row, int col);
 
+        bool exists() const;
+        void set_exists(bool b);
+        void set_dir(int dr, int dc);
+        void move();
         virtual void draw() = 0;
-
-        void set_pos(sf::Vector2f &pos)
-        {
-            m_body.setPosition(pos);
-        }
-
-        int get_row()
-        {
-            return m_row;
-        }
-
-        int get_col()
-        {
-            return m_col;
-        }
-    };
-
-    struct IMovable
-    {
-        virtual bool move(int dx, int dy) = 0;
     };
 
     class Bonus : public GameObject
     {
-        bool m_collected = false;
-
     public:
-        Bonus(Game &game, sf::Texture &texture, int row, int col);
+        Bonus(Game &game, sf::Texture &texture, sf::Vector2f &pos, int row, int col);
 
-        bool collected();
-        void set_collected(bool b);
         void draw() override;
     };
 
     class Hazard : public GameObject
     {
     public:
-        Hazard(Game &game, sf::Texture &texture, int row, int col);
+        Hazard(Game &game, sf::Texture &texture, sf::Vector2f &pos, int row, int col);
 
         void draw() override;
     };
 
-    class Fruit : public GameObject, IMovable
+    class Fruit : public GameObject
     {
     public:
-        Fruit(Game &game, sf::Texture &texture, int row, int col);
+        Fruit(Game &game, sf::Texture &texture, sf::Vector2f &pos, int row, int col);
 
         void draw() override;
-        bool move(int dx, int dy) override;
     };
 
-    class Ball : public GameObject, IMovable
+    class Ball : public GameObject
     {
     public:
-        Ball(Game &game, sf::Texture &texture, int row, int col);
+        Ball(Game &game, sf::Texture &texture, sf::Vector2f &pos, int row, int col);
 
         void draw() override;
-        bool move(int dx, int dy) override;
     };
+
+    class Portal : public GameObject
+    {
+    public:
+        Portal(Game &game, sf::Texture &texture, sf::Vector2f &pos, int row, int col);
+
+        void draw() override;
+    };
+
+    class Bomb : public GameObject
+    {
+        std::vector<std::vector<std::unique_ptr<sf::Sprite>>> m_frames;
+        float m_w = 0;
+        float m_h = 0;
+        int m_explosion_counter = 150;
+        bool m_deployed;
+
+        void load();
+
+    public:
+        Bomb(Game &game, sf::Texture &texture, sf::Vector2f &pos, int row, int col);
+
+        void set_deployed(bool b);
+        bool is_deployed() const;
+        void explode();
+        void draw() override;
+    };
+
+    /* ---------------GAME--------------- */
 
     sf::RenderWindow &m_window;
 
@@ -96,7 +165,7 @@ class Game
 
     Player m_player;
 
-    std::vector<std::unique_ptr<GameObject>> m_objects;
+    std::vector<std::vector<std::unique_ptr<GameObject>>> m_objects;
     std::vector<std::unique_ptr<Cell>> m_cells;
     sf::RectangleShape m_boundaries;
 
@@ -108,9 +177,23 @@ class Game
     Message m_message_curr_level;
     Message m_message_points;
 
+    enum class State
+    {
+        Menu,
+        GameStarted,
+        GameWon,
+        GameLost
+    };
+
+    State m_state = State::Menu;
+
     bool load_levels();
     void load_field();
-    void update_objects(float x, float y);
+    bool in_field(int row, int col) const;
+    void update_objects();
+    void update_messages();
+    void restart();
+    void change_level();
 
 public:
     Game(sf::RenderWindow &window, sf::Font &font);
