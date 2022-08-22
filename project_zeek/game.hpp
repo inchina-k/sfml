@@ -161,6 +161,7 @@ class Game
 
     std::vector<std::string> m_titles;
     std::vector<std::vector<std::string>> m_levels;
+    std::vector<std::string> m_level;
     size_t m_curr_level;
 
     Player m_player;
@@ -169,13 +170,16 @@ class Game
     std::vector<std::unique_ptr<Cell>> m_cells;
     sf::RectangleShape m_boundaries;
 
-    int m_total_bonuses = 0;
-    int m_collected_bonuses = 0;
+    int m_total_bonuses;
+    int m_collected_bonuses;
 
     std::string m_text_level = "level: ";
     std::string m_text_points = "points: ";
     Message m_message_curr_level;
     Message m_message_points;
+    std::string m_text_game_won = "Mission passed";
+    std::string m_text_game_lost = "Mission failed";
+    Message m_message_game_state;
 
     enum class State
     {
@@ -192,8 +196,9 @@ class Game
     bool in_field(int row, int col) const;
     void update_objects();
     void update_messages();
-    void restart();
+    void update_game_state();
     void change_level();
+    void render_objects();
 
 public:
     Game(sf::RenderWindow &window, sf::Font &font);

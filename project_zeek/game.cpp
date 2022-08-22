@@ -5,7 +5,8 @@
 
 Game::Game(sf::RenderWindow &window, sf::Font &font)
     : m_window(window), m_curr_level(0), m_player(*this),
-      m_message_curr_level(m_text_level, font), m_message_points(m_text_points, font)
+      m_message_curr_level(m_text_level, font), m_message_points(m_text_points, font),
+      m_message_game_state(m_text_game_won, font)
 {
     if (!load_levels())
     {
@@ -22,6 +23,7 @@ Game::Game(sf::RenderWindow &window, sf::Font &font)
 
     m_message_curr_level.set_properties(size, style, color, color, thickness);
     m_message_points.set_properties(size, style, color, color, thickness);
+    m_message_game_state.set_properties(m_window.getSize().x / 20, style, color, color, thickness);
 }
 
 /* ---------------PLAYER--------------- */
@@ -80,7 +82,7 @@ void Game::Player::set_size(float size)
     {
         for (auto &frame : frames)
         {
-            frame->scale(m_size / frame->getLocalBounds().width, m_size / frame->getLocalBounds().height);
+            frame->setScale(m_size / frame->getLocalBounds().width, m_size / frame->getLocalBounds().height);
             frame->setOrigin(frame->getLocalBounds().width / 2, frame->getLocalBounds().height / 2);
         }
     }
@@ -99,19 +101,19 @@ bool Game::Player::can_move(int dr, int dc)
 
     if (m_game.in_field(row, col))
     {
-        if (m_game.m_levels[m_game.m_curr_level][row][col] == '.' ||
-            m_game.m_levels[m_game.m_curr_level][row][col] == 'p' ||
-            m_game.m_levels[m_game.m_curr_level][row][col] == 'b' ||
-            m_game.m_levels[m_game.m_curr_level][row][col] == '*')
+        if (m_game.m_level[row][col] == '.' ||
+            m_game.m_level[row][col] == 'p' ||
+            m_game.m_level[row][col] == 'b' ||
+            m_game.m_level[row][col] == '*')
         {
             return true;
         }
-        else if (m_game.m_levels[m_game.m_curr_level][row][col] == 'h')
+        else if (m_game.m_level[row][col] == 'h')
         {
             return false;
         }
-        else if (m_game.m_levels[m_game.m_curr_level][row][col] != 'w' &&
-                 m_game.in_field(row + dr, col + dc) && m_game.m_levels[m_game.m_curr_level][row + dr][col + dc] == '.')
+        else if (m_game.m_level[row][col] != 'w' &&
+                 m_game.in_field(row + dr, col + dc) && m_game.m_level[row + dr][col + dc] == '.')
         {
             if (auto object = dynamic_cast<Bomb *>(m_game.m_objects[row][col].get()))
             {
@@ -119,7 +121,7 @@ bool Game::Player::can_move(int dr, int dc)
             }
 
             m_game.m_objects[row][col]->set_dir(dr, dc);
-            std::swap(m_game.m_levels[m_game.m_curr_level][row][col], m_game.m_levels[m_game.m_curr_level][row + dr][col + dc]);
+            std::swap(m_game.m_level[row][col], m_game.m_level[row + dr][col + dc]);
             std::swap(m_game.m_objects[row][col], m_game.m_objects[row + dr][col + dc]);
             return true;
         }
@@ -358,7 +360,7 @@ void Game::Bomb::load()
         for (auto &frame : frames)
         {
             float cell_size = m_game.m_cells.front()->get_size().x;
-            frame->scale(cell_size / frame->getLocalBounds().width, cell_size / frame->getLocalBounds().height);
+            frame->setScale(cell_size / frame->getLocalBounds().width, cell_size / frame->getLocalBounds().height);
         }
     }
 }
@@ -375,7 +377,11 @@ bool Game::Bomb::is_deployed() const
 
 void Game::Bomb::explode()
 {
-    if (is_deployed() && --m_explosion_counter == 0)
+    if (--m_explosion_counter > 0)
+    {
+        m_anim_index = 1;
+    }
+    else if (m_explosion_counter == 0)
     {
         m_anim_index = 2;
     }
@@ -387,14 +393,14 @@ void Game::Bomb::explode()
         for (size_t i = 0; i < row.size(); i++)
         {
             if (m_game.in_field(m_row + row[i], m_col + col[i]) &&
-                m_game.m_levels[m_game.m_curr_level][m_row + row[i]][m_col + col[i]] != 'w')
+                m_game.m_level[m_row + row[i]][m_col + col[i]] != 'w')
             {
-                m_game.m_levels[m_game.m_curr_level][m_row + row[i]][m_col + col[i]] = '.';
+                m_game.m_level[m_row + row[i]][m_col + col[i]] = '.';
                 m_game.m_objects[m_row + row[i]][m_col + col[i]].release();
             }
         }
 
-        m_game.m_levels[m_game.m_curr_level][m_row][m_col] = '.';
+        m_game.m_level[m_row][m_col] = '.';
         m_game.m_objects[m_row][m_col].release();
     }
 }
@@ -406,11 +412,7 @@ void Game::Bomb::draw()
     m_frames[m_anim_index][m_frame_index]->setPosition(m_pos);
     m_game.m_window.draw(*m_frames[m_anim_index][m_frame_index]);
 
-    if (m_curr_state == State::Go)
-    {
-        m_anim_index = 1;
-    }
-    else
+    if (m_curr_state == State::Stand && is_deployed())
     {
         explode();
     }
@@ -484,19 +486,22 @@ bool Game::load_levels()
 
 void Game::load_field()
 {
-    float cell_size = std::min(m_window.getSize().x, m_window.getSize().y) / (m_levels[m_curr_level].size() + 2);
+    m_level = m_levels[m_curr_level];
+    m_total_bonuses = m_collected_bonuses = 0;
+
+    float cell_size = std::min(m_window.getSize().x, m_window.getSize().y) / (m_level.size() + 2);
     sf::Vector2f block_size(cell_size, cell_size);
     m_player.set_size(cell_size);
 
-    float x = m_window.getSize().x / 2 - ((m_levels[m_curr_level].front().size() / 2.0f) * cell_size);
-    float y = m_window.getSize().y / 2 - ((m_levels[m_curr_level].size() / 2.0f) * cell_size);
+    float x = m_window.getSize().x / 2 - ((m_level.front().size() / 2.0f) * cell_size);
+    float y = m_window.getSize().y / 2 - ((m_level.size() / 2.0f) * cell_size);
     sf::Vector2f pos(x, y);
 
     m_boundaries.setFillColor(sf::Color::Transparent);
     m_boundaries.setOutlineColor(sf::Color::White);
     m_boundaries.setOutlineThickness(cell_size / 20);
     m_boundaries.setPosition(x, y);
-    m_boundaries.setSize(sf::Vector2f(cell_size * m_levels.front().front().size(), cell_size * m_levels.front().size()));
+    m_boundaries.setSize(sf::Vector2f(cell_size * m_level.front().size(), cell_size * m_level.size()));
 
     sf::Texture safe_cell, wall, bonus, fruit, ball, hazard, bomb, portal;
 
@@ -516,13 +521,15 @@ void Game::load_field()
     std::unordered_map<char, sf::Texture> cell_types =
         {{'.', safe_cell}, {'w', wall}, {'b', bonus}, {'f', fruit}, {'e', ball}, {'h', hazard}, {'m', bomb}, {'*', portal}};
 
-    m_objects.resize(m_levels[m_curr_level].size());
+    m_cells.clear();
+    m_objects.clear();
+    m_objects.resize(m_level.size());
 
-    for (size_t i = 0; i < m_levels[m_curr_level].size(); i++)
+    for (size_t i = 0; i < m_level.size(); i++)
     {
-        for (size_t j = 0; j < m_levels[m_curr_level][i].size(); j++)
+        for (size_t j = 0; j < m_level[i].size(); j++)
         {
-            char type = m_levels[m_curr_level][i][j];
+            char type = m_level[i][j];
 
             if (type == 'w')
             {
@@ -580,8 +587,8 @@ void Game::load_field()
 
 bool Game::in_field(int row, int col) const
 {
-    return row >= 0 && row < int(m_levels[m_curr_level].size()) &&
-           col >= 0 && col < int(m_levels[m_curr_level].front().size());
+    return row >= 0 && row < int(m_level.size()) &&
+           col >= 0 && col < int(m_level.front().size());
 }
 
 void Game::update_objects()
@@ -610,24 +617,75 @@ void Game::update_messages()
     std::string points = m_text_points + std::to_string(m_collected_bonuses);
     m_message_points.set_str(points);
     m_message_points.set_pos(m_window.getSize().x - size * 2, size / 1.5);
+
+    if (m_state == State::GameWon)
+    {
+        m_message_game_state.set_str(m_text_game_won);
+    }
+    else if (m_state == State::GameLost)
+    {
+        m_message_game_state.set_str(m_text_game_lost);
+    }
+
+    m_message_game_state.set_pos(m_window.getSize().x / 2, m_window.getSize().y / 2);
 }
 
-void Game::restart()
+void Game::update_game_state()
 {
-    //
-    //
+    if (m_state != State::Menu)
+    {
+        m_window.setMouseCursorVisible(false);
+    }
+    if (m_collected_bonuses == m_total_bonuses &&
+        m_level[m_player.get_coords().y][m_player.get_coords().x] == '*')
+    {
+        m_message_game_state.set_str(m_text_game_won);
+        m_state = State::GameWon;
+    }
 }
 
 void Game::change_level()
 {
     if (m_state == State::GameWon)
     {
-        ++m_curr_level;
-        load_field();
+        if (++m_curr_level == m_levels.size())
+        {
+            m_curr_level = 0;
+        }
     }
-    else if (m_state == State::GameLost)
+
+    load_field();
+    m_state = State::GameStarted;
+}
+
+void Game::render_objects()
+{
+    m_window.draw(m_boundaries);
+
+    for (auto &cell : m_cells)
     {
-        restart();
+        cell->draw();
+    }
+
+    for (auto &objects : m_objects)
+    {
+        for (auto &object : objects)
+        {
+            if (object)
+            {
+                object->draw();
+            }
+        }
+    }
+
+    m_player.draw();
+
+    m_message_curr_level.show_message(m_window);
+    m_message_points.show_message(m_window);
+
+    if (m_state == State::GameWon || m_state == State::GameLost)
+    {
+        m_message_game_state.show_message(m_window);
     }
 }
 
@@ -642,36 +700,19 @@ void Game::run()
             {
                 m_window.close();
             }
+            else if ((m_state == State::GameWon || m_state == State::GameLost) &&
+                     sf::Keyboard::isKeyPressed(sf::Keyboard::Enter))
+            {
+                change_level();
+            }
 
             update_objects();
             update_messages();
+            update_game_state();
         }
 
         m_window.clear();
-
-        m_message_curr_level.show_message(m_window);
-        m_message_points.show_message(m_window);
-
-        m_window.draw(m_boundaries);
-
-        for (auto &cell : m_cells)
-        {
-            cell->draw();
-        }
-
-        for (auto &objects : m_objects)
-        {
-            for (auto &object : objects)
-            {
-                if (object)
-                {
-                    object->draw();
-                }
-            }
-        }
-
-        m_player.draw();
-
+        render_objects();
         m_window.display();
     }
 }
