@@ -11,6 +11,7 @@
 
 #include "cell.hpp"
 #include "message.hpp"
+#include "button.hpp"
 
 class Game
 {
@@ -68,7 +69,6 @@ class Game
         sf::Sprite m_body;
         sf::Vector2f m_pos;
         int m_row = 0, m_col = 0;
-        bool m_exists;
 
         /* ---------MOVE--------- */
         enum class State
@@ -89,8 +89,6 @@ class Game
     public:
         GameObject(Game &game, sf::Texture &texture, sf::Vector2f &pos, int row, int col);
 
-        bool exists() const;
-        void set_exists(bool b);
         void set_dir(int dr, int dc);
         void move();
         virtual void draw() = 0;
@@ -181,6 +179,13 @@ class Game
     std::string m_text_game_lost = "Mission failed";
     Message m_message_game_state;
 
+    sf::Texture m_background_texture;
+    sf::Sprite m_menu_background;
+    std::string m_text_game_name = "d & d";
+    Message m_message_game_name;
+    std::string m_play_button_text = "Play";
+    Button m_play_button;
+
     enum class State
     {
         Menu,
@@ -194,7 +199,6 @@ class Game
     bool load_levels();
     void load_field();
     bool in_field(int row, int col) const;
-    void update_objects();
     void update_messages();
     void update_game_state();
     void change_level();

@@ -6,8 +6,21 @@
 Game::Game(sf::RenderWindow &window, sf::Font &font)
     : m_window(window), m_curr_level(0), m_player(*this),
       m_message_curr_level(m_text_level, font), m_message_points(m_text_points, font),
-      m_message_game_state(m_text_game_won, font)
+      m_message_game_state(m_text_game_won, font), m_message_game_name(m_text_game_name, font),
+      m_play_button(window, window.getSize().y / 5, window.getSize().y / 10, m_play_button_text, font)
 {
+    if (!m_background_texture.loadFromFile("data/images/background.png"))
+    {
+        std::cout << "background image is missing" << std::endl;
+        exit(1);
+    }
+
+    m_play_button.set_pos(m_window.getSize().x / 2, m_window.getSize().y / 2 + 70);
+
+    m_menu_background.setTexture(m_background_texture);
+    m_menu_background.setScale(m_window.getSize().x / m_background_texture.getSize().x,
+                               m_window.getSize().y / m_background_texture.getSize().y);
+
     if (!load_levels())
     {
         std::cout << "levels are not uploaded" << std::endl;
@@ -24,6 +37,8 @@ Game::Game(sf::RenderWindow &window, sf::Font &font)
     m_message_curr_level.set_properties(size, style, color, color, thickness);
     m_message_points.set_properties(size, style, color, color, thickness);
     m_message_game_state.set_properties(m_window.getSize().x / 20, style, color, color, thickness);
+    m_message_game_name.set_properties(m_window.getSize().x / 20, style, color, color, thickness);
+    m_message_game_name.set_pos(m_window.getSize().x / 2, m_window.getSize().y / 2 - 70);
 }
 
 /* ---------------PLAYER--------------- */
@@ -103,10 +118,15 @@ bool Game::Player::can_move(int dr, int dc)
     {
         if (m_game.m_level[row][col] == '.' ||
             m_game.m_level[row][col] == 'p' ||
-            m_game.m_level[row][col] == 'b' ||
             m_game.m_level[row][col] == '*')
         {
             return true;
+        }
+        else if (m_game.m_level[row][col] == 'b')
+        {
+            m_game.m_level[row][col] = '.';
+            m_game.m_objects[row][col].release();
+            ++m_game.m_collected_bonuses;
         }
         else if (m_game.m_level[row][col] == 'h')
         {
@@ -229,22 +249,12 @@ void Game::Player::draw()
 
 Game::GameObject::GameObject(Game &game, sf::Texture &texture, sf::Vector2f &pos, int row, int col)
     : m_game(game), m_texture(texture), m_pos(pos), m_row(row), m_col(col),
-      m_exists(true), m_num_of_steps(m_max_counter * 3), m_dir(0, 0)
+      m_num_of_steps(m_max_counter * 3), m_dir(0, 0)
 {
     m_body.setTexture(m_texture);
     m_body.scale(game.m_cells.front()->get_size().x / m_texture.getSize().x,
                  game.m_cells.front()->get_size().y / m_texture.getSize().y);
     m_body.setPosition(m_pos);
-}
-
-bool Game::GameObject::exists() const
-{
-    return m_exists;
-}
-
-void Game::GameObject::set_exists(bool b)
-{
-    m_exists = b;
 }
 
 void Game::GameObject::set_dir(int dr, int dc)
@@ -282,10 +292,7 @@ Game::Bonus::Bonus(Game &game, sf::Texture &texture, sf::Vector2f &pos, int row,
 
 void Game::Bonus::draw()
 {
-    if (exists())
-    {
-        m_game.m_window.draw(m_body);
-    }
+    m_game.m_window.draw(m_body);
 }
 
 Game::Hazard::Hazard(Game &game, sf::Texture &texture, sf::Vector2f &pos, int row, int col)
@@ -591,21 +598,6 @@ bool Game::in_field(int row, int col) const
            col >= 0 && col < int(m_level.front().size());
 }
 
-void Game::update_objects()
-{
-    int row = m_player.get_coords().y;
-    int col = m_player.get_coords().x;
-
-    if (auto object = dynamic_cast<Bonus *>(m_objects[row][col].get()))
-    {
-        if (object->exists())
-        {
-            object->set_exists(false);
-            ++m_collected_bonuses;
-        }
-    }
-}
-
 void Game::update_messages()
 {
     float size = m_cells.back()->get_size().x;
@@ -705,14 +697,28 @@ void Game::run()
             {
                 change_level();
             }
+            else if (m_play_button.is_pressed())
+            {
+                m_state = State::GameStarted;
+            }
 
-            update_objects();
-            update_messages();
             update_game_state();
+            update_messages();
         }
 
         m_window.clear();
-        render_objects();
+
+        if (m_state == State::Menu)
+        {
+            m_window.draw(m_menu_background);
+            m_message_game_name.show_message(m_window);
+            m_play_button.draw();
+        }
+        else
+        {
+            render_objects();
+        }
+
         m_window.display();
     }
 }
