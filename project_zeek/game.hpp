@@ -179,8 +179,9 @@ class Game
     std::string m_text_game_lost = "Mission failed";
     Message m_message_game_state;
 
-    sf::Texture m_background_texture;
-    sf::Sprite m_menu_background;
+    sf::Texture m_menu_background_texture;
+    sf::Texture m_game_background_texture;
+    sf::Sprite m_background;
     std::string m_text_game_name = "d & d";
     Message m_message_game_name;
     std::string m_play_button_text = "Play";
@@ -202,7 +203,7 @@ class Game
     void update_messages();
     void update_game_state();
     void change_level();
-    void render_objects();
+    void render_entities();
 
 public:
     Game(sf::RenderWindow &window, sf::Font &font);

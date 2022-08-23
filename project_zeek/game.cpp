@@ -9,7 +9,8 @@ Game::Game(sf::RenderWindow &window, sf::Font &font)
       m_message_game_state(m_text_game_won, font), m_message_game_name(m_text_game_name, font),
       m_play_button(window, window.getSize().y / 5, window.getSize().y / 10, m_play_button_text, font)
 {
-    if (!m_background_texture.loadFromFile("data/images/background.png"))
+    if (!m_menu_background_texture.loadFromFile("data/images/menu_background.png") ||
+        !m_game_background_texture.loadFromFile("data/images/game_background.png"))
     {
         std::cout << "background image is missing" << std::endl;
         exit(1);
@@ -17,9 +18,9 @@ Game::Game(sf::RenderWindow &window, sf::Font &font)
 
     m_play_button.set_pos(m_window.getSize().x / 2, m_window.getSize().y / 2 + 70);
 
-    m_menu_background.setTexture(m_background_texture);
-    m_menu_background.setScale(m_window.getSize().x / m_background_texture.getSize().x,
-                               m_window.getSize().y / m_background_texture.getSize().y);
+    m_background.setTexture(m_menu_background_texture);
+    m_background.setScale(m_window.getSize().x / m_menu_background_texture.getSize().x,
+                          m_window.getSize().y / m_menu_background_texture.getSize().y);
 
     if (!load_levels())
     {
@@ -44,7 +45,7 @@ Game::Game(sf::RenderWindow &window, sf::Font &font)
 /* ---------------PLAYER--------------- */
 
 Game::Player::Player(Game &game)
-    : m_game(game), m_counter(0), m_frame_index(0), m_anim_index(0), m_pos(0, 0), m_dir(0, 0), m_size(0),
+    : m_game(game), m_counter(0), m_frame_index(0), m_anim_index(0), m_size(0),
       m_row(0), m_col(0), m_num_of_steps(m_max_counter * 4)
 {
     if (!m_texture.loadFromFile("data/images/doodly.png"))
@@ -249,11 +250,11 @@ void Game::Player::draw()
 
 Game::GameObject::GameObject(Game &game, sf::Texture &texture, sf::Vector2f &pos, int row, int col)
     : m_game(game), m_texture(texture), m_pos(pos), m_row(row), m_col(col),
-      m_num_of_steps(m_max_counter * 3), m_dir(0, 0)
+      m_num_of_steps(m_max_counter * 3)
 {
     m_body.setTexture(m_texture);
-    m_body.scale(game.m_cells.front()->get_size().x / m_texture.getSize().x,
-                 game.m_cells.front()->get_size().y / m_texture.getSize().y);
+    m_body.setScale(game.m_cells.front()->get_size().x / m_texture.getSize().x,
+                    game.m_cells.front()->get_size().y / m_texture.getSize().y);
     m_body.setPosition(m_pos);
 }
 
@@ -650,7 +651,7 @@ void Game::change_level()
     m_state = State::GameStarted;
 }
 
-void Game::render_objects()
+void Game::render_entities()
 {
     m_window.draw(m_boundaries);
 
@@ -700,6 +701,7 @@ void Game::run()
             else if (m_play_button.is_pressed())
             {
                 m_state = State::GameStarted;
+                m_background.setTexture(m_game_background_texture);
             }
 
             update_game_state();
@@ -708,15 +710,16 @@ void Game::run()
 
         m_window.clear();
 
+        m_window.draw(m_background);
+
         if (m_state == State::Menu)
         {
-            m_window.draw(m_menu_background);
             m_message_game_name.show_message(m_window);
             m_play_button.draw();
         }
         else
         {
-            render_objects();
+            render_entities();
         }
 
         m_window.display();
