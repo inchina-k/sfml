@@ -46,7 +46,7 @@ Game::Game(sf::RenderWindow &window, sf::Font &font)
 
 Game::Player::Player(Game &game)
     : m_game(game), m_counter(0), m_frame_index(0), m_anim_index(0), m_size(0),
-      m_row(0), m_col(0), m_num_of_steps(m_max_counter * 4)
+      m_row(0), m_col(0), m_num_of_steps(m_max_counter * 4), m_caught(false)
 {
     if (!m_texture.loadFromFile("data/images/doodly.png"))
     {
@@ -106,7 +106,8 @@ void Game::Player::set_size(float size)
 
 sf::Vector2f Game::Player::get_size() const
 {
-    sf::Vector2f size(m_frames[m_anim_index][m_frame_index]->getGlobalBounds().width, m_frames[m_anim_index][m_frame_index]->getGlobalBounds().height);
+    sf::Vector2f size(m_frames[m_anim_index][m_frame_index]->getGlobalBounds().width,
+                      m_frames[m_anim_index][m_frame_index]->getGlobalBounds().height);
     return size;
 }
 
@@ -228,12 +229,25 @@ void Game::Player::move()
     }
 }
 
+void Game::Player::set_caught(bool b)
+{
+    m_caught = b;
+}
+
+bool Game::Player::get_caught() const
+{
+    return m_caught;
+}
+
 void Game::Player::draw()
 {
     move();
 
-    m_frames[m_anim_index][m_frame_index]->setPosition(m_pos);
-    m_game.m_window.draw(*m_frames[m_anim_index][m_frame_index]);
+    if (!m_caught)
+    {
+        m_frames[m_anim_index][m_frame_index]->setPosition(m_pos);
+        m_game.m_window.draw(*m_frames[m_anim_index][m_frame_index]);
+    }
 
     if (++m_counter == m_max_counter)
     {
@@ -297,8 +311,28 @@ void Game::Bonus::draw()
 }
 
 Game::Hazard::Hazard(Game &game, sf::Texture &texture, sf::Vector2f &pos, int row, int col)
-    : GameObject(game, texture, pos, row, col)
+    : GameObject(game, texture, pos, row, col), m_dangerous(true)
 {
+}
+
+void Game::Hazard::set_dangerous(bool b)
+{
+    m_dangerous = b;
+}
+
+bool Game::Hazard::is_dangerous() const
+{
+    return m_dangerous;
+}
+
+void Game::Hazard::catch_player()
+{
+    if (!m_texture.loadFromFile("data/images/player_caught.png"))
+    {
+        exit(1);
+    }
+
+    m_body.setTexture(m_texture);
 }
 
 void Game::Hazard::draw()
@@ -628,12 +662,37 @@ void Game::update_game_state()
     if (m_state != State::Menu)
     {
         m_window.setMouseCursorVisible(false);
-    }
-    if (m_collected_bonuses == m_total_bonuses &&
-        m_level[m_player.get_coords().y][m_player.get_coords().x] == '*')
-    {
-        m_message_game_state.set_str(m_text_game_won);
-        m_state = State::GameWon;
+
+        if (m_collected_bonuses == m_total_bonuses &&
+            m_level[m_player.get_coords().y][m_player.get_coords().x] == '*')
+        {
+            m_message_game_state.set_str(m_text_game_won);
+            m_state = State::GameWon;
+        }
+        else
+        {
+            std::vector<int> row = {1, 0, -1, 0};
+            std::vector<int> col = {0, -1, 0, 1};
+
+            for (size_t i = 0; i < row.size(); i++)
+            {
+                int r = m_player.get_coords().y + row[i];
+                int c = m_player.get_coords().x + col[i];
+
+                if (in_field(r, c) && m_level[r][c] == 'h')
+                {
+                    auto object = dynamic_cast<Hazard *>(m_objects[r][c].get());
+
+                    if (object->is_dangerous())
+                    {
+                        m_message_game_state.set_str(m_text_game_lost);
+                        object->catch_player();
+                        m_player.set_caught(true);
+                        m_state = State::GameLost;
+                    }
+                }
+            }
+        }
     }
 }
 
@@ -647,6 +706,7 @@ void Game::change_level()
         }
     }
 
+    m_player.set_caught(false);
     load_field();
     m_state = State::GameStarted;
 }

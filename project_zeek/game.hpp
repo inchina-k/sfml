@@ -43,6 +43,8 @@ class Game
         int m_num_of_steps;
         float m_step = 0;
 
+        bool m_caught;
+
         void load();
         void switch_command();
         bool can_move(int dr, int dc);
@@ -56,6 +58,8 @@ class Game
         sf::Vector2i get_coords() const;
         void set_size(float size);
         sf::Vector2f get_size() const;
+        void set_caught(bool b);
+        bool get_caught() const;
         void draw();
     };
 
@@ -104,9 +108,14 @@ class Game
 
     class Hazard : public GameObject
     {
+        bool m_dangerous;
+
     public:
         Hazard(Game &game, sf::Texture &texture, sf::Vector2f &pos, int row, int col);
 
+        void set_dangerous(bool b);
+        bool is_dangerous() const;
+        void catch_player();
         void draw() override;
     };
 
