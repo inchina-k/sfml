@@ -9,18 +9,7 @@ Game::Game(sf::RenderWindow &window, sf::Font &font)
       m_message_game_state(m_text_game_won, font), m_message_game_name(m_text_game_name, font),
       m_play_button(window, window.getSize().y / 5, window.getSize().y / 10, m_play_button_text, font)
 {
-    if (!m_menu_background_texture.loadFromFile("data/images/menu_background.png") ||
-        !m_game_background_texture.loadFromFile("data/images/game_background.png"))
-    {
-        std::cout << "background image is missing" << std::endl;
-        exit(1);
-    }
-
-    m_play_button.set_pos(m_window.getSize().x / 2, m_window.getSize().y / 2 + 70);
-
-    m_background.setTexture(m_menu_background_texture);
-    m_background.setScale(m_window.getSize().x / m_menu_background_texture.getSize().x,
-                          m_window.getSize().y / m_menu_background_texture.getSize().y);
+    load_background();
 
     if (!load_levels())
     {
@@ -29,17 +18,8 @@ Game::Game(sf::RenderWindow &window, sf::Font &font)
     }
 
     load_field();
-
-    float size = m_window.getSize().x / 47;
-    sf::Text::Style style = sf::Text::Style::Regular;
-    sf::Color color = sf::Color::White;
-    int thickness = 2;
-
-    m_message_curr_level.set_properties(size, style, color, color, thickness);
-    m_message_points.set_properties(size, style, color, color, thickness);
-    m_message_game_state.set_properties(m_window.getSize().x / 20, style, color, color, thickness);
-    m_message_game_name.set_properties(m_window.getSize().x / 20, style, color, color, thickness);
-    m_message_game_name.set_pos(m_window.getSize().x / 2, m_window.getSize().y / 2 - 70);
+    load_messages();
+    load_sounds();
 }
 
 /* ---------------PLAYER--------------- */
@@ -126,6 +106,7 @@ bool Game::Player::can_move(int dr, int dc)
         }
         else if (m_game.m_level[row][col] == 'b')
         {
+            m_game.m_bonus_sound.play();
             m_game.m_level[row][col] = '.';
             m_game.m_objects[row][col].release();
             ++m_game.m_collected_bonuses;
@@ -627,6 +608,53 @@ void Game::load_field()
     }
 }
 
+void Game::load_background()
+{
+    if (!m_menu_background_texture.loadFromFile("data/images/menu_background.png") ||
+        !m_game_background_texture.loadFromFile("data/images/game_background.png"))
+    {
+        std::cout << "background image is missing" << std::endl;
+        exit(1);
+    }
+
+    m_play_button.set_pos(m_window.getSize().x / 2, m_window.getSize().y / 2 + 70);
+
+    m_background.setTexture(m_menu_background_texture);
+    m_background.setScale(m_window.getSize().x / m_menu_background_texture.getSize().x,
+                          m_window.getSize().y / m_menu_background_texture.getSize().y);
+}
+
+void Game::load_messages()
+{
+    float size = m_window.getSize().x / 47;
+    sf::Text::Style style = sf::Text::Style::Regular;
+    sf::Color color = sf::Color::White;
+    int thickness = 2;
+
+    m_message_curr_level.set_properties(size, style, color, color, thickness);
+    m_message_points.set_properties(size, style, color, color, thickness);
+    m_message_game_state.set_properties(m_window.getSize().x / 20, style, color, color, thickness);
+    m_message_game_name.set_properties(m_window.getSize().x / 20, style, color, color, thickness);
+    m_message_game_name.set_pos(m_window.getSize().x / 2, m_window.getSize().y / 2 - 70);
+}
+
+void Game::load_sounds()
+{
+    if (!m_bonus_buffer.loadFromFile("data/sounds/bonus.wav") ||
+        !m_game_lost_buffer.loadFromFile("data/sounds/game_lost.wav") ||
+        !m_game_won_buffer.loadFromFile("data/sounds/game_won.wav"))
+    {
+        std::cout << "Sound is not uploaded" << std::endl;
+        exit(1);
+    }
+
+    m_bonus_sound.setBuffer(m_bonus_buffer);
+    m_game_lost_sound.setBuffer(m_game_lost_buffer);
+    m_game_won_sound.setBuffer(m_game_won_buffer);
+
+    m_bonus_sound.setVolume(50);
+}
+
 bool Game::in_field(int row, int col) const
 {
     return row >= 0 && row < int(m_level.size()) &&
@@ -648,10 +676,22 @@ void Game::update_messages()
     if (m_state == State::GameWon)
     {
         m_message_game_state.set_str(m_text_game_won);
+
+        if (m_play_sound)
+        {
+            m_game_won_sound.play();
+            m_play_sound = false;
+        }
     }
     else if (m_state == State::GameLost)
     {
         m_message_game_state.set_str(m_text_game_lost);
+
+        if (m_play_sound)
+        {
+            m_game_lost_sound.play();
+            m_play_sound = false;
+        }
     }
 
     m_message_game_state.set_pos(m_window.getSize().x / 2, m_window.getSize().y / 2);
@@ -694,6 +734,8 @@ void Game::update_game_state()
             }
         }
     }
+
+    update_messages();
 }
 
 void Game::change_level()
@@ -709,6 +751,7 @@ void Game::change_level()
     m_player.set_caught(false);
     load_field();
     m_state = State::GameStarted;
+    m_play_sound = true;
 }
 
 void Game::render_entities()
@@ -765,7 +808,6 @@ void Game::run()
             }
 
             update_game_state();
-            update_messages();
         }
 
         m_window.clear();

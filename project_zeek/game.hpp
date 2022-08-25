@@ -1,6 +1,7 @@
 #pragma once
 
 #include <SFML/Graphics.hpp>
+#include <SFML/Audio.hpp>
 
 #include <fstream>
 #include <sstream>
@@ -206,8 +207,19 @@ class Game
 
     State m_state = State::Menu;
 
+    /* ---------SOUND--------- */
+
+    sf::SoundBuffer m_bonus_buffer, m_game_lost_buffer, m_game_won_buffer;
+    sf::Sound m_bonus_sound, m_game_lost_sound, m_game_won_sound;
+    bool m_play_sound = true;
+
+    /* ---------FUNCTIONS/METHODS--------- */
+
     bool load_levels();
     void load_field();
+    void load_background();
+    void load_messages();
+    void load_sounds();
     bool in_field(int row, int col) const;
     void update_messages();
     void update_game_state();
