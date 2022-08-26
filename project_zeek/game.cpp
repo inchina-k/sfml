@@ -22,437 +22,6 @@ Game::Game(sf::RenderWindow &window, sf::Font &font)
     load_sounds();
 }
 
-/* ---------------PLAYER--------------- */
-
-Game::Player::Player(Game &game)
-    : m_game(game), m_counter(0), m_frame_index(0), m_anim_index(0), m_size(0),
-      m_row(0), m_col(0), m_num_of_steps(m_max_counter * 4), m_caught(false)
-{
-    if (!m_texture.loadFromFile("data/images/doodly.png"))
-    {
-        std::cout << "file for the player is missing" << std::endl;
-        exit(1);
-    }
-
-    m_w = m_texture.getSize().x / 3;
-    m_h = m_texture.getSize().y / 4;
-
-    load();
-}
-
-void Game::Player::load()
-{
-    m_frames.resize(4);
-
-    for (size_t i = 0; i < 4; i++)
-    {
-        for (size_t j = 0; j < 3; j++)
-        {
-            m_frames[i].push_back(std::make_unique<sf::Sprite>(m_texture, sf::IntRect(j * m_w, i * m_h, m_w, m_h)));
-        }
-    }
-}
-
-void Game::Player::set_pos(sf::Vector2f &pos, int row, int col)
-{
-    m_pos = pos;
-    m_row = row;
-    m_col = col;
-}
-
-sf::Vector2f Game::Player::get_pos() const
-{
-    return m_pos;
-}
-
-sf::Vector2i Game::Player::get_coords() const
-{
-    return sf::Vector2i(m_col, m_row);
-}
-
-void Game::Player::set_size(float size)
-{
-    m_size = size;
-
-    for (auto &frames : m_frames)
-    {
-        for (auto &frame : frames)
-        {
-            frame->setScale(m_size / frame->getLocalBounds().width, m_size / frame->getLocalBounds().height);
-            frame->setOrigin(frame->getLocalBounds().width / 2, frame->getLocalBounds().height / 2);
-        }
-    }
-}
-
-sf::Vector2f Game::Player::get_size() const
-{
-    sf::Vector2f size(m_frames[m_anim_index][m_frame_index]->getGlobalBounds().width,
-                      m_frames[m_anim_index][m_frame_index]->getGlobalBounds().height);
-    return size;
-}
-
-bool Game::Player::can_move(int dr, int dc)
-{
-    int row = m_row + dr;
-    int col = m_col + dc;
-
-    if (m_game.in_field(row, col))
-    {
-        if (m_game.m_level[row][col] == '.' ||
-            m_game.m_level[row][col] == 'p' ||
-            m_game.m_level[row][col] == '*')
-        {
-            return true;
-        }
-        else if (m_game.m_level[row][col] == 'b')
-        {
-            m_game.m_bonus_sound.play();
-            m_game.m_level[row][col] = '.';
-            m_game.m_objects[row][col].release();
-            ++m_game.m_collected_bonuses;
-        }
-        else if (m_game.m_level[row][col] == 'h')
-        {
-            return false;
-        }
-        else if (m_game.m_level[row][col] != 'w' &&
-                 m_game.in_field(row + dr, col + dc) && m_game.m_level[row + dr][col + dc] == '.')
-        {
-            if (auto object = dynamic_cast<Bomb *>(m_game.m_objects[row][col].get()))
-            {
-                object->set_deployed(true);
-            }
-
-            m_game.m_objects[row][col]->set_dir(dr, dc);
-            std::swap(m_game.m_level[row][col], m_game.m_level[row + dr][col + dc]);
-            std::swap(m_game.m_objects[row][col], m_game.m_objects[row + dr][col + dc]);
-            return true;
-        }
-    }
-
-    return false;
-}
-
-void Game::Player::switch_command()
-{
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Down))
-    {
-        m_anim_index = 0;
-
-        if (can_move(1, 0))
-        {
-            m_curr_state = State::Go;
-            m_dir.x = 0;
-            m_dir.y = m_step;
-            ++m_row;
-        }
-    }
-    else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Up))
-    {
-        m_anim_index = 1;
-
-        if (can_move(-1, 0))
-        {
-            m_curr_state = State::Go;
-            m_dir.x = 0;
-            m_dir.y = -m_step;
-            --m_row;
-        }
-    }
-    else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Left))
-    {
-        m_anim_index = 2;
-
-        if (can_move(0, -1))
-        {
-            m_curr_state = State::Go;
-            m_dir.x = -m_step;
-            m_dir.y = 0;
-            --m_col;
-        }
-    }
-    else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Right))
-    {
-        m_anim_index = 3;
-
-        if (can_move(0, 1))
-        {
-            m_curr_state = State::Go;
-            m_dir.x = m_step;
-            m_dir.y = 0;
-            ++m_col;
-        }
-    }
-    else
-    {
-        m_frame_index = 0;
-    }
-}
-
-void Game::Player::move()
-{
-    if (m_curr_state == State::Go)
-    {
-        m_pos += m_dir;
-        --m_num_of_steps;
-
-        if (m_num_of_steps == 0)
-        {
-            m_curr_state = State::Stand;
-        }
-    }
-    else
-    {
-        m_num_of_steps = m_max_counter * 3;
-        m_step = get_size().x / m_num_of_steps;
-
-        switch_command();
-    }
-}
-
-void Game::Player::set_caught(bool b)
-{
-    m_caught = b;
-}
-
-bool Game::Player::get_caught() const
-{
-    return m_caught;
-}
-
-void Game::Player::draw()
-{
-    move();
-
-    if (!m_caught)
-    {
-        m_frames[m_anim_index][m_frame_index]->setPosition(m_pos);
-        m_game.m_window.draw(*m_frames[m_anim_index][m_frame_index]);
-    }
-
-    if (++m_counter == m_max_counter)
-    {
-        if (++m_frame_index == 3)
-        {
-            m_frame_index = 1;
-        }
-
-        m_counter = 0;
-    }
-}
-
-/* ---------------GAME_OBJECTS--------------- */
-
-Game::GameObject::GameObject(Game &game, sf::Texture &texture, sf::Vector2f &pos, int row, int col)
-    : m_game(game), m_texture(texture), m_pos(pos), m_row(row), m_col(col),
-      m_num_of_steps(m_max_counter * 3)
-{
-    m_body.setTexture(m_texture);
-    m_body.setScale(game.m_cells.front()->get_size().x / m_texture.getSize().x,
-                    game.m_cells.front()->get_size().y / m_texture.getSize().y);
-    m_body.setPosition(m_pos);
-}
-
-void Game::GameObject::set_dir(int dr, int dc)
-{
-    m_curr_state = State::Go;
-    m_dir.x = m_step * dc;
-    m_dir.y = m_step * dr;
-    m_row += dr;
-    m_col += dc;
-}
-
-void Game::GameObject::move()
-{
-    if (m_curr_state == State::Go)
-    {
-        m_pos += m_dir;
-        --m_num_of_steps;
-
-        if (m_num_of_steps == 0)
-        {
-            m_curr_state = State::Stand;
-        }
-    }
-    else
-    {
-        m_num_of_steps = m_max_counter * 3;
-        m_step = m_body.getGlobalBounds().width / m_num_of_steps;
-    }
-}
-
-Game::Bonus::Bonus(Game &game, sf::Texture &texture, sf::Vector2f &pos, int row, int col)
-    : GameObject(game, texture, pos, row, col)
-{
-}
-
-void Game::Bonus::draw()
-{
-    m_game.m_window.draw(m_body);
-}
-
-Game::Hazard::Hazard(Game &game, sf::Texture &texture, sf::Vector2f &pos, int row, int col)
-    : GameObject(game, texture, pos, row, col), m_dangerous(true)
-{
-}
-
-void Game::Hazard::set_dangerous(bool b)
-{
-    m_dangerous = b;
-}
-
-bool Game::Hazard::is_dangerous() const
-{
-    return m_dangerous;
-}
-
-void Game::Hazard::catch_player()
-{
-    if (!m_texture.loadFromFile("data/images/player_caught.png"))
-    {
-        exit(1);
-    }
-
-    m_body.setTexture(m_texture);
-}
-
-void Game::Hazard::draw()
-{
-    m_game.m_window.draw(m_body);
-}
-
-Game::Fruit::Fruit(Game &game, sf::Texture &texture, sf::Vector2f &pos, int row, int col)
-    : GameObject(game, texture, pos, row, col)
-
-{
-}
-
-void Game::Fruit::draw()
-{
-    move();
-    m_body.setPosition(m_pos);
-    m_game.m_window.draw(m_body);
-}
-
-Game::Ball::Ball(Game &game, sf::Texture &texture, sf::Vector2f &pos, int row, int col)
-    : GameObject(game, texture, pos, row, col)
-{
-}
-
-void Game::Ball::draw()
-{
-    move();
-
-    m_body.setPosition(m_pos);
-    m_game.m_window.draw(m_body);
-}
-
-Game::Portal::Portal(Game &game, sf::Texture &texture, sf::Vector2f &pos, int row, int col)
-    : GameObject(game, texture, pos, row, col)
-{
-}
-
-void Game::Portal::draw()
-{
-    m_game.m_window.draw(m_body);
-}
-
-Game::Bomb::Bomb(Game &game, sf::Texture &texture, sf::Vector2f &pos, int row, int col)
-    : GameObject(game, texture, pos, row, col), m_deployed(false)
-{
-    m_w = m_texture.getSize().x / 2;
-    m_h = m_texture.getSize().y / 3;
-
-    load();
-}
-
-void Game::Bomb::load()
-{
-    m_frames.resize(3);
-
-    for (size_t i = 0; i < 3; i++)
-    {
-        for (size_t j = 0; j < 2; j++)
-        {
-            m_frames[i].push_back(std::make_unique<sf::Sprite>(m_texture, sf::IntRect(j * m_w, i * m_h, m_w, m_h)));
-        }
-    }
-
-    for (auto &frames : m_frames)
-    {
-        for (auto &frame : frames)
-        {
-            float cell_size = m_game.m_cells.front()->get_size().x;
-            frame->setScale(cell_size / frame->getLocalBounds().width, cell_size / frame->getLocalBounds().height);
-        }
-    }
-}
-
-void Game::Bomb::set_deployed(bool b)
-{
-    m_deployed = b;
-}
-
-bool Game::Bomb::is_deployed() const
-{
-    return m_deployed;
-}
-
-void Game::Bomb::explode()
-{
-    if (--m_explosion_counter > 0)
-    {
-        m_anim_index = 1;
-    }
-    else if (m_explosion_counter == 0)
-    {
-        m_anim_index = 2;
-    }
-    else if (m_explosion_counter < -5)
-    {
-        std::vector<int> row = {-1, 0, 1, 0, -1, 1, -1, 1};
-        std::vector<int> col = {0, -1, 0, 1, -1, 1, 1, -1};
-
-        for (size_t i = 0; i < row.size(); i++)
-        {
-            if (m_game.in_field(m_row + row[i], m_col + col[i]) &&
-                m_game.m_level[m_row + row[i]][m_col + col[i]] != 'w')
-            {
-                m_game.m_level[m_row + row[i]][m_col + col[i]] = '.';
-                m_game.m_objects[m_row + row[i]][m_col + col[i]].release();
-            }
-        }
-
-        m_game.m_level[m_row][m_col] = '.';
-        m_game.m_objects[m_row][m_col].release();
-    }
-}
-
-void Game::Bomb::draw()
-{
-    move();
-
-    m_frames[m_anim_index][m_frame_index]->setPosition(m_pos);
-    m_game.m_window.draw(*m_frames[m_anim_index][m_frame_index]);
-
-    if (m_curr_state == State::Stand && is_deployed())
-    {
-        explode();
-    }
-
-    if (++m_counter == m_max_counter)
-    {
-        if (++m_frame_index == 2)
-        {
-            m_frame_index = 0;
-        }
-
-        m_counter = 0;
-    }
-}
-
-/* ---------------GAME--------------- */
-
 bool Game::load_levels()
 {
     std::fstream fs("data/levels.data");
@@ -526,7 +95,7 @@ void Game::load_field()
     m_boundaries.setPosition(x, y);
     m_boundaries.setSize(sf::Vector2f(cell_size * m_level.front().size(), cell_size * m_level.size()));
 
-    sf::Texture safe_cell, wall, bonus, fruit, ball, hazard, bomb, portal;
+    sf::Texture safe_cell, wall, bonus, fruit, ball, hazard, bomb, portal, crystal, key, gates;
 
     if (!safe_cell.loadFromFile("data/images/safe_cell.png") ||
         !wall.loadFromFile("data/images/wall.png") ||
@@ -535,14 +104,17 @@ void Game::load_field()
         !ball.loadFromFile("data/images/ball.png") ||
         !hazard.loadFromFile("data/images/droodle.png") ||
         !bomb.loadFromFile("data/images/bomb.png") ||
-        !portal.loadFromFile("data/images/portal.png"))
+        !portal.loadFromFile("data/images/portal.png") ||
+        !crystal.loadFromFile("data/images/crystal.png") ||
+        !key.loadFromFile("data/images/key.png") ||
+        !gates.loadFromFile("data/images/gates.png"))
     {
         std::cout << "file for an object is missing" << std::endl;
         exit(1);
     }
 
     std::unordered_map<char, sf::Texture> cell_types =
-        {{'.', safe_cell}, {'w', wall}, {'b', bonus}, {'f', fruit}, {'e', ball}, {'h', hazard}, {'m', bomb}, {'*', portal}};
+        {{'.', safe_cell}, {'w', wall}, {'b', bonus}, {'f', fruit}, {'e', ball}, {'h', hazard}, {'m', bomb}, {'*', portal}, {'c', crystal}, {'k', key}, {'g', gates}};
 
     m_cells.clear();
     m_objects.clear();
@@ -597,6 +169,18 @@ void Game::load_field()
                 else if (type == '*')
                 {
                     m_objects[i].push_back(std::make_unique<Portal>(*this, cell_types[type], pos, i, j));
+                }
+                else if (type == 'c')
+                {
+                    m_objects[i].push_back(std::make_unique<Crystal>(*this, cell_types[type], pos, i, j));
+                }
+                else if (type == 'k')
+                {
+                    m_objects[i].push_back(std::make_unique<Key>(*this, cell_types[type], pos, i, j));
+                }
+                else if (type == 'g')
+                {
+                    m_objects[i].push_back(std::make_unique<Gates>(*this, cell_types[type], pos, i, j));
                 }
             }
 
@@ -706,7 +290,6 @@ void Game::update_game_state()
         if (m_collected_bonuses == m_total_bonuses &&
             m_level[m_player.get_coords().y][m_player.get_coords().x] == '*')
         {
-            m_message_game_state.set_str(m_text_game_won);
             m_state = State::GameWon;
         }
         else
@@ -725,7 +308,6 @@ void Game::update_game_state()
 
                     if (object->is_dangerous())
                     {
-                        m_message_game_state.set_str(m_text_game_lost);
                         object->catch_player();
                         m_player.set_caught(true);
                         m_state = State::GameLost;
@@ -733,9 +315,9 @@ void Game::update_game_state()
                 }
             }
         }
-    }
 
-    update_messages();
+        update_messages();
+    }
 }
 
 void Game::change_level()
@@ -749,9 +331,10 @@ void Game::change_level()
     }
 
     m_player.set_caught(false);
+    m_player.restore_keys();
     load_field();
-    m_state = State::GameStarted;
     m_play_sound = true;
+    m_state = State::GameStarted;
 }
 
 void Game::render_entities()
@@ -806,9 +389,9 @@ void Game::run()
                 m_state = State::GameStarted;
                 m_background.setTexture(m_game_background_texture);
             }
-
-            update_game_state();
         }
+
+        update_game_state();
 
         m_window.clear();
 

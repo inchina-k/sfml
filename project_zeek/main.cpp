@@ -4,7 +4,7 @@
 
 int main()
 {
-    sf::RenderWindow window(sf::VideoMode::getDesktopMode(), "Doodly", sf::Style::Fullscreen);
+    sf::RenderWindow window(sf::VideoMode::getDesktopMode(), "d&d", sf::Style::Fullscreen);
     window.setVerticalSyncEnabled(true);
 
     sf::Font font;

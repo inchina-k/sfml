@@ -45,6 +45,7 @@ class Game
         float m_step = 0;
 
         bool m_caught;
+        int m_num_of_keys = 0;
 
         void load();
         void switch_command();
@@ -60,7 +61,9 @@ class Game
         void set_size(float size);
         sf::Vector2f get_size() const;
         void set_caught(bool b);
-        bool get_caught() const;
+        bool is_caught() const;
+        void restore_keys();
+        bool has_keys() const;
         void draw();
     };
 
@@ -163,6 +166,52 @@ class Game
         void draw() override;
     };
 
+    class Crystal : public GameObject
+    {
+        std::vector<std::vector<std::unique_ptr<sf::Sprite>>> m_frames;
+        float m_w = 0;
+        float m_h = 0;
+        int m_explosion_counter = 150;
+        bool m_activated;
+
+        void load();
+
+    public:
+        Crystal(Game &game, sf::Texture &texture, sf::Vector2f &pos, int row, int col);
+
+        void set_activated(bool b);
+        bool is_activated() const;
+        void explode();
+        void draw() override;
+    };
+
+    class Gates : public GameObject
+    {
+        std::vector<std::vector<std::unique_ptr<sf::Sprite>>> m_frames;
+        float m_w = 0;
+        float m_h = 0;
+        int m_open_counter = 15;
+        bool m_opened;
+
+        void load();
+
+    public:
+        Gates(Game &game, sf::Texture &texture, sf::Vector2f &pos, int row, int col);
+
+        void set_opened(bool b);
+        bool is_opened() const;
+        void open();
+        void draw() override;
+    };
+
+    class Key : public GameObject
+    {
+    public:
+        Key(Game &game, sf::Texture &texture, sf::Vector2f &pos, int row, int col);
+
+        void draw() override;
+    };
+
     /* ---------------GAME--------------- */
 
     sf::RenderWindow &m_window;
@@ -213,7 +262,7 @@ class Game
     sf::Sound m_bonus_sound, m_game_lost_sound, m_game_won_sound;
     bool m_play_sound = true;
 
-    /* ---------FUNCTIONS/METHODS--------- */
+    /* ---------MEMBER_FUNCTIONS/METHODS--------- */
 
     bool load_levels();
     void load_field();
