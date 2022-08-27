@@ -63,6 +63,16 @@ bool Game::Hazard::is_dangerous() const
     return m_dangerous;
 }
 
+void Game::Hazard::catch_fruit()
+{
+    if (!m_texture.loadFromFile("data/images/fruit_caught.png"))
+    {
+        exit(1);
+    }
+
+    m_body.setTexture(m_texture);
+}
+
 void Game::Hazard::catch_player()
 {
     if (!m_texture.loadFromFile("data/images/player_caught.png"))
@@ -75,6 +85,31 @@ void Game::Hazard::catch_player()
 
 void Game::Hazard::draw()
 {
+    std::vector<int> row = {-1, 0, 1, 0};
+    std::vector<int> col = {0, -1, 0, 1};
+
+    for (size_t i = 0; i < row.size(); i++)
+    {
+        if (m_game.in_field(m_row + row[i], m_col + col[i]) &&
+            m_game.m_level[m_row + row[i]][m_col + col[i]] == 'f')
+        {
+            set_dangerous(false);
+            m_game.m_level[m_row + row[i]][m_col + col[i]] = '.';
+            m_game.m_objects[m_row + row[i]][m_col + col[i]].release();
+            catch_fruit();
+        }
+        else if (m_game.in_field(m_row + row[i], m_col + col[i]) &&
+                 m_game.m_player.get_coords().y == m_row + row[i] &&
+                 m_game.m_player.get_coords().x == m_col + col[i])
+        {
+            if (is_dangerous())
+            {
+                catch_player();
+                m_game.m_player.set_caught(true);
+            }
+        }
+    }
+
     m_game.m_window.draw(m_body);
 }
 
@@ -287,8 +322,8 @@ void Game::Crystal::draw()
 
     if (m_curr_state == State::Stand && is_activated())
     {
-        std::vector<int> row = {-1, 0, 1, 0, -1, 1, -1, 1};
-        std::vector<int> col = {0, -1, 0, 1, -1, 1, 1, -1};
+        std::vector<int> row = {-1, 0, 1, 0};
+        std::vector<int> col = {0, -1, 0, 1};
 
         for (size_t i = 0; i < row.size(); i++)
         {

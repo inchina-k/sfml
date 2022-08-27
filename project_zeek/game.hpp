@@ -119,6 +119,7 @@ class Game
 
         void set_dangerous(bool b);
         bool is_dangerous() const;
+        void catch_fruit();
         void catch_player();
         void draw() override;
     };

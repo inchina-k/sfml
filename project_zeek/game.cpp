@@ -292,28 +292,9 @@ void Game::update_game_state()
         {
             m_state = State::GameWon;
         }
-        else
+        else if (m_player.is_caught())
         {
-            std::vector<int> row = {1, 0, -1, 0};
-            std::vector<int> col = {0, -1, 0, 1};
-
-            for (size_t i = 0; i < row.size(); i++)
-            {
-                int r = m_player.get_coords().y + row[i];
-                int c = m_player.get_coords().x + col[i];
-
-                if (in_field(r, c) && m_level[r][c] == 'h')
-                {
-                    auto object = dynamic_cast<Hazard *>(m_objects[r][c].get());
-
-                    if (object->is_dangerous())
-                    {
-                        object->catch_player();
-                        m_player.set_caught(true);
-                        m_state = State::GameLost;
-                    }
-                }
-            }
+            m_state = State::GameLost;
         }
 
         update_messages();
