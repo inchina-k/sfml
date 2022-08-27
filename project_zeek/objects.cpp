@@ -97,6 +97,7 @@ void Game::Hazard::draw()
             m_game.m_level[m_row + row[i]][m_col + col[i]] = '.';
             m_game.m_objects[m_row + row[i]][m_col + col[i]].release();
             catch_fruit();
+            m_game.m_chewing_sound.play();
         }
         else if (m_game.in_field(m_row + row[i], m_col + col[i]) &&
                  m_game.m_player.get_coords().y == m_row + row[i] &&
@@ -199,6 +200,9 @@ void Game::Bomb::explode()
     else if (m_explosion_counter == 0)
     {
         m_anim_index = 2;
+
+        m_game.m_bomb_deployed_sound.stop();
+        m_game.m_bomb_exploded_sound.play();
     }
     else if (m_explosion_counter < -5)
     {
@@ -305,6 +309,9 @@ void Game::Crystal::explode()
     else if (m_explosion_counter == 0)
     {
         m_anim_index = 2;
+
+        m_game.m_crystal_activated_sound.stop();
+        m_game.m_crystal_exploded_sound.play();
     }
     else if (m_explosion_counter < -5)
     {

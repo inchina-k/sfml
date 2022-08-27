@@ -259,8 +259,12 @@ class Game
 
     /* ---------SOUND--------- */
 
-    sf::SoundBuffer m_bonus_buffer, m_game_lost_buffer, m_game_won_buffer;
-    sf::Sound m_bonus_sound, m_game_lost_sound, m_game_won_sound;
+    sf::SoundBuffer m_bonus_buffer, m_game_lost_buffer, m_game_won_buffer, m_key_buffer, m_gates_opening_buffer,
+        m_chewing_buffer, m_bomb_deployed_buffer, m_bomb_exploded_buffer, m_crystal_activated_buffer, m_crystal_exploded_buffer,
+        m_pushing_buffer;
+    sf::Sound m_bonus_sound, m_game_lost_sound, m_game_won_sound, m_key_sound, m_gates_opening_sound,
+        m_chewing_sound, m_bomb_deployed_sound, m_bomb_exploded_sound, m_crystal_activated_sound, m_crystal_exploded_sound,
+        m_pushing_sound;
     bool m_play_sound = true;
 
     /* ---------MEMBER_FUNCTIONS/METHODS--------- */

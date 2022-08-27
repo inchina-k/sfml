@@ -226,15 +226,31 @@ void Game::load_sounds()
 {
     if (!m_bonus_buffer.loadFromFile("data/sounds/bonus.wav") ||
         !m_game_lost_buffer.loadFromFile("data/sounds/game_lost.wav") ||
-        !m_game_won_buffer.loadFromFile("data/sounds/game_won.wav"))
+        !m_game_won_buffer.loadFromFile("data/sounds/game_won.wav") ||
+        !m_key_buffer.loadFromFile("data/sounds/key.wav") ||
+        !m_gates_opening_buffer.loadFromFile("data/sounds/gates_opening.wav") ||
+        !m_chewing_buffer.loadFromFile("data/sounds/chewing.wav") ||
+        !m_bomb_deployed_buffer.loadFromFile("data/sounds/bomb_deployed.wav") ||
+        !m_bomb_exploded_buffer.loadFromFile("data/sounds/bomb_exploded.wav") ||
+        !m_crystal_activated_buffer.loadFromFile("data/sounds/crystal_activated.wav") ||
+        !m_crystal_exploded_buffer.loadFromFile("data/sounds/crystal_exploded.wav") ||
+        !m_pushing_buffer.loadFromFile("data/sounds/pushing.wav"))
     {
-        std::cout << "Sound is not uploaded" << std::endl;
+        std::cout << "sound is not uploaded" << std::endl;
         exit(1);
     }
 
     m_bonus_sound.setBuffer(m_bonus_buffer);
     m_game_lost_sound.setBuffer(m_game_lost_buffer);
     m_game_won_sound.setBuffer(m_game_won_buffer);
+    m_key_sound.setBuffer(m_key_buffer);
+    m_gates_opening_sound.setBuffer(m_gates_opening_buffer);
+    m_chewing_sound.setBuffer(m_chewing_buffer);
+    m_bomb_deployed_sound.setBuffer(m_bomb_deployed_buffer);
+    m_bomb_exploded_sound.setBuffer(m_bomb_exploded_buffer);
+    m_crystal_activated_sound.setBuffer(m_crystal_activated_buffer);
+    m_crystal_exploded_sound.setBuffer(m_crystal_exploded_buffer);
+    m_pushing_sound.setBuffer(m_pushing_buffer);
 
     m_bonus_sound.setVolume(50);
 }
