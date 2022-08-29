@@ -158,7 +158,14 @@ void Game::Hazard::draw()
 
     if (!is_dangerous() && !m_game.m_player.is_caught())
     {
-        if (--m_neutralized_counter == 0)
+        if (--m_neutralized_counter > 0 && m_neutralized_counter < 5)
+        {
+            if (!m_texture.loadFromFile("data/images/droodle_swallowing.png"))
+                exit(1);
+
+            m_body.setTexture(m_texture);
+        }
+        else if (m_neutralized_counter == 0)
         {
             m_game.m_swallow_sound.play();
 
