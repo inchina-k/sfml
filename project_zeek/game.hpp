@@ -113,7 +113,7 @@ class Game
     class Hazard : public GameObject
     {
         bool m_dangerous;
-        int m_neutralized_counter = 15;
+        int m_neutralized_counter = 500;
 
     public:
         Hazard(Game &game, sf::Texture &texture, sf::Vector2f &pos, int row, int col);

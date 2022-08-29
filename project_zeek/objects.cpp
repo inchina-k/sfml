@@ -129,7 +129,7 @@ void Game::Hazard::catch_player(int dir_row, int dir_col)
             }
 
             m_body.setTexture(m_texture);
-
+            set_dangerous(false);
             m_game.m_player.set_caught(true);
             m_counter = 0;
         }
@@ -153,6 +153,19 @@ void Game::Hazard::draw()
                  m_game.m_player.get_coords().x == m_col + col[i])
         {
             catch_player(row[i], col[i]);
+        }
+    }
+
+    if (!is_dangerous())
+    {
+        if (--m_neutralized_counter == 0)
+        {
+            if (!m_texture.loadFromFile("data/images/droodle.png"))
+                exit(1);
+
+            m_body.setTexture(m_texture);
+            m_neutralized_counter = 500;
+            set_dangerous(true);
         }
     }
 
