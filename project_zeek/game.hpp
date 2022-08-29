@@ -113,14 +113,16 @@ class Game
     class Hazard : public GameObject
     {
         bool m_dangerous;
+        int m_neutralized_counter = 15;
 
     public:
         Hazard(Game &game, sf::Texture &texture, sf::Vector2f &pos, int row, int col);
 
+        void raise_hands(int dir_row, int dir_col);
         void set_dangerous(bool b);
         bool is_dangerous() const;
-        void catch_fruit();
-        void catch_player();
+        void catch_fruit(int row, int col, int dir_row, int dir_col);
+        void catch_player(int dir_row, int dir_col);
         void draw() override;
     };
 
@@ -257,7 +259,7 @@ class Game
 
     State m_state = State::Menu;
 
-    /* ---------SOUND--------- */
+    /* ---------SOUNDS--------- */
 
     sf::SoundBuffer m_bonus_buffer, m_game_lost_buffer, m_game_won_buffer, m_key_buffer, m_gates_opening_buffer,
         m_chewing_buffer, m_bomb_deployed_buffer, m_bomb_exploded_buffer, m_crystal_activated_buffer, m_crystal_exploded_buffer,

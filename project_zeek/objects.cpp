@@ -53,6 +53,32 @@ Game::Hazard::Hazard(Game &game, sf::Texture &texture, sf::Vector2f &pos, int ro
 {
 }
 
+void Game::Hazard::raise_hands(int dir_row, int dir_col)
+{
+    if (dir_row == -1)
+    {
+        if (!m_texture.loadFromFile("data/images/droodle_up.png"))
+            exit(1);
+    }
+    else if (dir_row == 1)
+    {
+        if (!m_texture.loadFromFile("data/images/droodle_down.png"))
+            exit(1);
+    }
+    else if (dir_col == -1)
+    {
+        if (!m_texture.loadFromFile("data/images/droodle_left.png"))
+            exit(1);
+    }
+    else if (dir_col == 1)
+    {
+        if (!m_texture.loadFromFile("data/images/droodle_right.png"))
+            exit(1);
+    }
+
+    m_body.setTexture(m_texture);
+}
+
 void Game::Hazard::set_dangerous(bool b)
 {
     m_dangerous = b;
@@ -63,24 +89,51 @@ bool Game::Hazard::is_dangerous() const
     return m_dangerous;
 }
 
-void Game::Hazard::catch_fruit()
+void Game::Hazard::catch_fruit(int row, int col, int dir_row, int dir_col)
 {
-    if (!m_texture.loadFromFile("data/images/fruit_caught.png"))
+    if (++m_counter < m_max_counter * 3)
     {
-        exit(1);
+        raise_hands(dir_row, dir_col);
     }
+    else if (m_counter == m_max_counter * 3)
+    {
+        if (!m_texture.loadFromFile("data/images/fruit_caught.png"))
+        {
+            exit(1);
+        }
 
-    m_body.setTexture(m_texture);
+        m_game.m_level[row][col] = '.';
+        m_game.m_objects[row][col].release();
+
+        m_body.setTexture(m_texture);
+
+        set_dangerous(false);
+        m_game.m_chewing_sound.play();
+        m_counter = 0;
+    }
 }
 
-void Game::Hazard::catch_player()
+void Game::Hazard::catch_player(int dir_row, int dir_col)
 {
-    if (!m_texture.loadFromFile("data/images/player_caught.png"))
+    if (is_dangerous())
     {
-        exit(1);
-    }
+        if (++m_counter < m_max_counter * 3)
+        {
+            raise_hands(dir_row, dir_col);
+        }
+        else if (m_counter == m_max_counter * 3)
+        {
+            if (!m_texture.loadFromFile("data/images/player_caught.png"))
+            {
+                exit(1);
+            }
 
-    m_body.setTexture(m_texture);
+            m_body.setTexture(m_texture);
+
+            m_game.m_player.set_caught(true);
+            m_counter = 0;
+        }
+    }
 }
 
 void Game::Hazard::draw()
@@ -93,21 +146,13 @@ void Game::Hazard::draw()
         if (m_game.in_field(m_row + row[i], m_col + col[i]) &&
             m_game.m_level[m_row + row[i]][m_col + col[i]] == 'f')
         {
-            set_dangerous(false);
-            m_game.m_level[m_row + row[i]][m_col + col[i]] = '.';
-            m_game.m_objects[m_row + row[i]][m_col + col[i]].release();
-            catch_fruit();
-            m_game.m_chewing_sound.play();
+            catch_fruit(m_row + row[i], m_col + col[i], row[i], col[i]);
         }
         else if (m_game.in_field(m_row + row[i], m_col + col[i]) &&
                  m_game.m_player.get_coords().y == m_row + row[i] &&
                  m_game.m_player.get_coords().x == m_col + col[i])
         {
-            if (is_dangerous())
-            {
-                catch_player();
-                m_game.m_player.set_caught(true);
-            }
+            catch_player(row[i], col[i]);
         }
     }
 
