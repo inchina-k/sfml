@@ -235,7 +235,8 @@ void Game::load_sounds()
         !m_crystal_exploded_buffer.loadFromFile("data/sounds/crystal_exploded.wav") ||
         !m_chewing_buffer.loadFromFile("data/sounds/chewing.wav") ||
         !m_swallow_buffer.loadFromFile("data/sounds/swallow.wav") ||
-        !m_pushing_buffer.loadFromFile("data/sounds/pushing.wav"))
+        !m_pushing_buffer.loadFromFile("data/sounds/pushing.wav") ||
+        !m_step_buffer.loadFromFile("data/sounds/step.wav"))
     {
         std::cout << "sound is not uploaded" << std::endl;
         exit(1);
@@ -253,10 +254,13 @@ void Game::load_sounds()
     m_chewing_sound.setBuffer(m_chewing_buffer);
     m_swallow_sound.setBuffer(m_swallow_buffer);
     m_pushing_sound.setBuffer(m_pushing_buffer);
+    m_step_sound.setBuffer(m_step_buffer);
 
     m_bonus_sound.setVolume(50);
     m_crystal_activated_sound.setVolume(50);
+    m_chewing_sound.setVolume(80);
     m_swallow_sound.setVolume(50);
+    m_step_sound.setVolume(30);
 }
 
 bool Game::in_field(int row, int col) const

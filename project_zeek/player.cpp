@@ -246,6 +246,11 @@ void Game::Player::draw()
 
     if (++m_counter == m_max_counter)
     {
+        if (m_curr_state == State::Go)
+        {
+            m_game.m_step_sound.play();
+        }
+
         if (++m_frame_index == 3)
         {
             m_frame_index = 1;
