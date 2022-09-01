@@ -102,8 +102,8 @@ bool Game::Player::can_move(int dr, int dc)
 
             if (has_keys())
             {
-                object->set_opened(true);
                 m_game.m_gates_opening_sound.play();
+                object->set_opened(true);
                 --m_num_of_keys;
             }
         }
@@ -117,12 +117,10 @@ bool Game::Player::can_move(int dr, int dc)
             if (auto object = dynamic_cast<Bomb *>(m_game.m_objects[row][col].get()))
             {
                 object->set_deployed(true);
-                m_game.m_bomb_deployed_sound.play();
             }
             else if (auto object_1 = dynamic_cast<Crystal *>(m_game.m_objects[row][col].get()))
             {
                 object_1->set_activated(true);
-                m_game.m_crystal_activated_sound.play();
             }
             else if (m_game.m_level[row][col] == 'e')
             {

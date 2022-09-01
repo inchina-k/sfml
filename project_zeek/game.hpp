@@ -157,12 +157,12 @@ class Game
         float m_h = 0;
         int m_explosion_counter = 150;
         bool m_deployed;
+        bool m_play_sound = true;
 
         void load();
 
     public:
         Bomb(Game &game, sf::Texture &texture, sf::Vector2f &pos, int row, int col);
-
         void set_deployed(bool b);
         bool is_deployed() const;
         void explode();
@@ -176,6 +176,7 @@ class Game
         float m_h = 0;
         int m_explosion_counter = 150;
         bool m_activated;
+        bool m_play_sound = true;
 
         void load();
 

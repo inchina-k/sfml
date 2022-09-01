@@ -255,6 +255,7 @@ void Game::load_sounds()
     m_pushing_sound.setBuffer(m_pushing_buffer);
 
     m_bonus_sound.setVolume(50);
+    m_crystal_activated_sound.setVolume(50);
     m_swallow_sound.setVolume(50);
 }
 

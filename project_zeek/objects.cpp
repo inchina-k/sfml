@@ -260,6 +260,12 @@ bool Game::Bomb::is_deployed() const
 
 void Game::Bomb::explode()
 {
+    if (m_play_sound)
+    {
+        m_game.m_bomb_deployed_sound.play();
+        m_play_sound = false;
+    }
+
     if (--m_explosion_counter > 0)
     {
         m_anim_index = 1;
@@ -369,6 +375,12 @@ bool Game::Crystal::is_activated() const
 
 void Game::Crystal::explode()
 {
+    if (m_play_sound)
+    {
+        m_game.m_crystal_activated_sound.play();
+        m_play_sound = false;
+    }
+
     if (--m_explosion_counter > 0)
     {
         m_anim_index = 1;
