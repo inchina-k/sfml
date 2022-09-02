@@ -286,7 +286,9 @@ void Game::Bomb::explode()
         {
             if (m_game.in_field(m_row + row[i], m_col + col[i]) &&
                 m_game.m_level[m_row + row[i]][m_col + col[i]] != 'w' &&
-                m_game.m_level[m_row + row[i]][m_col + col[i]] != 'g')
+                m_game.m_level[m_row + row[i]][m_col + col[i]] != 'g' &&
+                m_game.m_level[m_row + row[i]][m_col + col[i]] != 'p' &&
+                m_game.m_level[m_row + row[i]][m_col + col[i]] != '*')
             {
                 if (m_game.m_level[m_row + row[i]][m_col + col[i]] == 'b')
                 {
@@ -417,10 +419,15 @@ void Game::Crystal::draw()
                 m_game.m_level[m_row + row[i]][m_col + col[i]] == 'c')
             {
                 auto object = dynamic_cast<Crystal *>(m_game.m_objects[m_row + row[i]][m_col + col[i]].get());
-                object->explode();
-                explode();
+
+                if (!object->is_activated())
+                {
+                    object->explode();
+                }
+                object->set_activated(true);
             }
         }
+        explode();
     }
 
     if (++m_counter == m_max_counter)

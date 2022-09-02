@@ -257,10 +257,11 @@ void Game::load_sounds()
     m_step_sound.setBuffer(m_step_buffer);
 
     m_bonus_sound.setVolume(50);
-    m_crystal_activated_sound.setVolume(50);
+    m_key_sound.setVolume(50);
+    m_crystal_activated_sound.setVolume(30);
     m_chewing_sound.setVolume(80);
     m_swallow_sound.setVolume(50);
-    m_step_sound.setVolume(30);
+    m_step_sound.setVolume(10);
 }
 
 bool Game::in_field(int row, int col) const
@@ -340,6 +341,9 @@ void Game::change_level()
     load_field();
     m_play_sound = true;
     m_state = State::GameStarted;
+
+    m_crystal_activated_sound.stop();
+    m_bomb_deployed_sound.stop();
 }
 
 void Game::render_entities()
@@ -384,8 +388,7 @@ void Game::run()
             {
                 m_window.close();
             }
-            else if ((m_state == State::GameWon || m_state == State::GameLost) &&
-                     sf::Keyboard::isKeyPressed(sf::Keyboard::Enter))
+            else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Enter))
             {
                 change_level();
             }
