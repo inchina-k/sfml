@@ -71,7 +71,7 @@ void Game::change_blocks_type(sf::Texture &texture)
 {
     for (auto &block : m_blocks)
     {
-        if (block->get_initial_health() == 2)
+        if (block->get_initial_health() == 2 && !block->is_ruined())
         {
             block->set_health(1);
             block->set_texture(texture);

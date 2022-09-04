@@ -7,6 +7,7 @@
 int main()
 {
     sf::RenderWindow window(sf::VideoMode::getDesktopMode(), "Arkanoid", sf::Style::Fullscreen);
+    window.setVerticalSyncEnabled(true);
 
     sf::Font font;
     font.loadFromFile("data/fonts/PressStart2P-Regular.ttf");

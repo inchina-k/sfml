@@ -68,6 +68,11 @@ bool Block::in_rect(float tx, float ty, float radius) const
            ty >= m_body.getPosition().y - radius;
 }
 
+bool Block::is_damaged() const
+{
+    return m_current_health > 0 && m_current_health < m_initial_health;
+}
+
 bool Block::is_ruined() const
 {
     return !m_current_health;
@@ -81,12 +86,13 @@ void Block::heal()
 
 void Block::reduce_health()
 {
-    if (--m_current_health > 0 && m_current_health < m_initial_health)
+    --m_current_health;
+
+    if (is_damaged())
     {
         m_body.setTexture(&m_damaged_textures[Random::get(0, int(m_damaged_textures.size() - 1))]);
     }
-
-    if (m_current_health == 0)
+    else if (is_ruined())
     {
         if (ptr_to_magic_start)
         {

@@ -37,6 +37,8 @@ public:
 
     bool in_rect(float tx, float ty, float radius) const;
 
+    bool is_damaged() const;
+
     bool is_ruined() const;
 
     void heal();
