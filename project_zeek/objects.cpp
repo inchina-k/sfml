@@ -425,9 +425,15 @@ void Game::Crystal::draw()
                     object->explode();
                 }
                 object->set_activated(true);
+
+                m_should_explode = true;
             }
         }
-        explode();
+
+        if (m_should_explode)
+        {
+            explode();
+        }
     }
 
     if (++m_counter == m_max_counter)

@@ -176,6 +176,7 @@ class Game
         float m_h = 0;
         int m_explosion_counter = 150;
         bool m_activated;
+        bool m_should_explode = false;
         bool m_play_sound = true;
 
         void load();
