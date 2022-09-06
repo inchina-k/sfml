@@ -93,10 +93,12 @@ class Game
         int m_anim_index = 0;
         int m_counter = 0;
         sf::Vector2f m_dir;
+        bool m_can_move = true;
 
     public:
         GameObject(Game &game, sf::Texture &texture, sf::Vector2f &pos, int row, int col);
 
+        bool can_move() const;
         void set_dir(int dr, int dc);
         void move();
         virtual void draw() = 0;
@@ -114,6 +116,9 @@ class Game
     {
         bool m_dangerous;
         int m_neutralized_counter = 500;
+        sf::Texture m_up, m_down, m_left, m_right;
+        sf::Texture m_fruit_caught, m_player_caught;
+        sf::Texture m_swallowing;
 
     public:
         Hazard(Game &game, sf::Texture &texture, sf::Vector2f &pos, int row, int col);

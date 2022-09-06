@@ -127,10 +127,13 @@ bool Game::Player::can_move(int dr, int dc)
                 m_game.m_pushing_sound.play();
             }
 
-            m_game.m_objects[row][col]->set_dir(dr, dc);
-            std::swap(m_game.m_level[row][col], m_game.m_level[row + dr][col + dc]);
-            std::swap(m_game.m_objects[row][col], m_game.m_objects[row + dr][col + dc]);
-            return true;
+            if (m_game.m_objects[row][col]->can_move())
+            {
+                m_game.m_objects[row][col]->set_dir(dr, dc);
+                std::swap(m_game.m_level[row][col], m_game.m_level[row + dr][col + dc]);
+                std::swap(m_game.m_objects[row][col], m_game.m_objects[row + dr][col + dc]);
+                return true;
+            }
         }
     }
 

@@ -10,6 +10,11 @@ Game::GameObject::GameObject(Game &game, sf::Texture &texture, sf::Vector2f &pos
     m_body.setPosition(m_pos);
 }
 
+bool Game::GameObject::can_move() const
+{
+    return m_can_move;
+}
+
 void Game::GameObject::set_dir(int dr, int dc)
 {
     m_curr_state = State::Go;
@@ -51,32 +56,36 @@ void Game::Bonus::draw()
 Game::Hazard::Hazard(Game &game, sf::Texture &texture, sf::Vector2f &pos, int row, int col)
     : GameObject(game, texture, pos, row, col), m_dangerous(true)
 {
+    if (!m_up.loadFromFile("data/images/droodle_up.png") ||
+        !m_down.loadFromFile("data/images/droodle_down.png") ||
+        !m_left.loadFromFile("data/images/droodle_left.png") ||
+        !m_right.loadFromFile("data/images/droodle_right.png") ||
+        !m_fruit_caught.loadFromFile("data/images/fruit_caught.png") ||
+        !m_player_caught.loadFromFile("data/images/player_caught.png") ||
+        !m_swallowing.loadFromFile("data/images/droodle_swallowing.png"))
+    {
+        exit(1);
+    }
 }
 
 void Game::Hazard::raise_hands(int dir_row, int dir_col)
 {
     if (dir_row == -1)
     {
-        if (!m_texture.loadFromFile("data/images/droodle_up.png"))
-            exit(1);
+        m_body.setTexture(m_up);
     }
     else if (dir_row == 1)
     {
-        if (!m_texture.loadFromFile("data/images/droodle_down.png"))
-            exit(1);
+        m_body.setTexture(m_down);
     }
     else if (dir_col == -1)
     {
-        if (!m_texture.loadFromFile("data/images/droodle_left.png"))
-            exit(1);
+        m_body.setTexture(m_left);
     }
     else if (dir_col == 1)
     {
-        if (!m_texture.loadFromFile("data/images/droodle_right.png"))
-            exit(1);
+        m_body.setTexture(m_right);
     }
-
-    m_body.setTexture(m_texture);
 }
 
 void Game::Hazard::set_dangerous(bool b)
@@ -91,25 +100,23 @@ bool Game::Hazard::is_dangerous() const
 
 void Game::Hazard::catch_fruit(int row, int col, int dir_row, int dir_col)
 {
-    if (++m_counter < m_max_counter * 3)
+    if (is_dangerous())
     {
-        raise_hands(dir_row, dir_col);
-    }
-    else if (m_counter == m_max_counter * 3)
-    {
-        if (!m_texture.loadFromFile("data/images/fruit_caught.png"))
+        if (++m_counter < m_max_counter * 3)
         {
-            exit(1);
+            raise_hands(dir_row, dir_col);
         }
+        else if (m_counter == m_max_counter * 3)
+        {
+            m_game.m_level[row][col] = '.';
+            m_game.m_objects[row][col].release();
 
-        m_game.m_level[row][col] = '.';
-        m_game.m_objects[row][col].release();
+            m_body.setTexture(m_fruit_caught);
 
-        m_body.setTexture(m_texture);
-
-        set_dangerous(false);
-        m_game.m_chewing_sound.play();
-        m_counter = 0;
+            m_game.m_chewing_sound.play();
+            set_dangerous(false);
+            m_counter = 0;
+        }
     }
 }
 
@@ -123,14 +130,9 @@ void Game::Hazard::catch_player(int dir_row, int dir_col)
         }
         else if (m_counter == m_max_counter * 3)
         {
-            if (!m_texture.loadFromFile("data/images/player_caught.png"))
-            {
-                exit(1);
-            }
-
-            m_body.setTexture(m_texture);
-            set_dangerous(false);
+            m_body.setTexture(m_player_caught);
             m_game.m_player.set_caught(true);
+            set_dangerous(false);
             m_counter = 0;
         }
     }
@@ -160,18 +162,11 @@ void Game::Hazard::draw()
     {
         if (--m_neutralized_counter > 0 && m_neutralized_counter < 5)
         {
-            if (!m_texture.loadFromFile("data/images/droodle_swallowing.png"))
-                exit(1);
-
-            m_body.setTexture(m_texture);
+            m_body.setTexture(m_swallowing);
         }
         else if (m_neutralized_counter == 0)
         {
             m_game.m_swallow_sound.play();
-
-            if (!m_texture.loadFromFile("data/images/droodle.png"))
-                exit(1);
-
             m_body.setTexture(m_texture);
             m_neutralized_counter = 500;
             set_dangerous(true);
@@ -272,6 +267,8 @@ void Game::Bomb::explode()
     }
     else if (m_explosion_counter == 0)
     {
+        m_can_move = false;
+
         m_anim_index = 2;
 
         m_game.m_bomb_deployed_sound.stop();
@@ -422,6 +419,7 @@ void Game::Crystal::draw()
 
                 if (!object->is_activated())
                 {
+                    object->m_can_move = false;
                     object->explode();
                 }
                 object->set_activated(true);
@@ -432,6 +430,7 @@ void Game::Crystal::draw()
 
         if (m_should_explode)
         {
+            m_can_move = false;
             explode();
         }
     }
