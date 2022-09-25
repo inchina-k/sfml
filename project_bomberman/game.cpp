@@ -1,0 +1,257 @@
+#include "game.hpp"
+
+#include <iostream>
+#include <fstream>
+#include <sstream>
+#include <unordered_map>
+
+Game::Game(sf::RenderWindow &window, sf::Font &font)
+    : m_window(window), m_curr_level(0), m_player(*this),
+      m_message_level(m_text_level, font), m_message_lives(m_text_lives, font),
+      m_play_button(window, window.getSize().y / 5, window.getSize().y / 10, m_play_button_text, font)
+{
+    if (!load_levels())
+    {
+        std::cout << "levels are not uploaded" << std::endl;
+        exit(1);
+    }
+
+    load_background();
+    load_field();
+    load_views();
+    load_messages();
+}
+
+bool Game::load_levels()
+{
+    std::fstream fs("data/levels.data");
+
+    if (!fs)
+    {
+        return false;
+    }
+
+    for (;;)
+    {
+        std::string line;
+
+        if (!std::getline(fs, line))
+        {
+            break;
+        }
+
+        m_titles.push_back(line);
+
+        if (!std::getline(fs, line))
+        {
+            std::cout << "height is not found" << std::endl;
+            return false;
+        }
+
+        int height;
+        std::istringstream ss(line);
+
+        if (!(ss >> height))
+        {
+            std::cout << "height is not an int" << std::endl;
+            return false;
+        }
+
+        std::vector<std::string> level;
+
+        for (int i = 0; i < height; i++)
+        {
+            if (!std::getline(fs, line))
+            {
+                std::cout << "level is not found" << std::endl;
+                return false;
+            }
+
+            level.push_back(line);
+        }
+
+        m_levels.push_back(level);
+    }
+
+    return true;
+}
+
+void Game::load_background()
+{
+    if (!m_menu_texture.loadFromFile("data/images/menu.png") ||
+        !m_game_texture.loadFromFile("data/images/bg.png"))
+    {
+        exit(1);
+    }
+
+    m_menu_background.setTexture(m_menu_texture);
+    m_menu_background.setScale(m_window.getSize().x / m_menu_background.getTexture()->getSize().x,
+                               m_window.getSize().y / m_menu_background.getTexture()->getSize().y);
+
+    m_game_background.setTexture(m_game_texture);
+    m_game_background.setScale(m_window.getSize().x / m_game_background.getTexture()->getSize().x,
+                               m_window.getSize().y / m_game_background.getTexture()->getSize().y);
+
+    m_play_button.set_pos(m_window.getSize().x / 2 + 150, m_window.getSize().y / 2);
+}
+
+void Game::load_field()
+{
+    m_level = m_levels[m_curr_level];
+
+    sf::Vector2f pos(0, 0);
+
+    sf::Texture safe_cell, wall, enemy;
+
+    if (!safe_cell.loadFromFile("data/images/safe_cell.png") ||
+        !wall.loadFromFile("data/images/wall.png") ||
+        !enemy.loadFromFile("data/images/enemy.png"))
+    {
+        std::cout << "file for an object is missing" << std::endl;
+        exit(1);
+    }
+
+    std::unordered_map<char, sf::Texture> cell_types =
+        {{'.', safe_cell}, {'w', wall}, {'e', enemy}};
+
+    m_cells.clear();
+    m_objects.clear();
+
+    float cell_size = std::min(m_window.getSize().x, m_window.getSize().y) / (m_level.size() / 1.7f);
+    sf::Vector2f block_size(cell_size, cell_size);
+
+    for (size_t i = 0; i < m_level.size(); i++)
+    {
+        for (size_t j = 0; j < m_level[i].size(); j++)
+        {
+            char type = m_level[i][j];
+
+            if (type == 'w')
+            {
+                m_cells.push_back(std::make_unique<Wall>(*this, cell_types[type], block_size, pos));
+            }
+            else
+            {
+                m_cells.push_back(std::make_unique<SafeCell>(*this, cell_types['.'], block_size, pos));
+
+                sf::Vector2f object_size = block_size * 0.97f;
+
+                if (type == 'p')
+                {
+                    m_player.set_size(object_size);
+                    m_player.set_pos(pos);
+                }
+                else if (type == 'e')
+                {
+                    m_objects.push_back(std::make_unique<Enemy>(*this, cell_types[type], object_size, pos));
+                }
+            }
+
+            pos.x += cell_size;
+        }
+
+        pos.x = 0;
+        pos.y += cell_size;
+    }
+}
+
+void Game::load_views()
+{
+    m_main_view.setSize(m_window.getSize().x, m_window.getSize().y);
+    m_main_view.setCenter(m_player.get_pos() + m_player.get_size() / 2.f);
+
+    m_map_view.setSize(m_cells.back()->get_size().x * m_level.front().size(), m_cells.back()->get_size().y * m_level.size());
+    m_map_view.setCenter(m_cells.back()->get_pos() / 2.f + m_cells.back()->get_size() / 2.f);
+    m_map_view.setViewport(sf::FloatRect(0.70f, 0.70f, 0.25f, 0.25f));
+
+    m_hud_view.setSize(m_window.getSize().x, m_window.getSize().y);
+    m_hud_view.setCenter(m_window.getSize().x / 2, m_window.getSize().y / 2);
+}
+
+void Game::load_messages()
+{
+    float size = m_window.getSize().x / 47;
+    sf::Text::Style style = sf::Text::Style::Regular;
+    sf::Color color = sf::Color::White;
+    int thickness = 2;
+
+    m_message_level.set_properties(size, style, color, color, thickness);
+    m_message_lives.set_properties(size, style, color, color, thickness);
+}
+
+void Game::update_messages()
+{
+    std::string str_level = m_text_level + m_titles[m_curr_level];
+    m_message_level.set_str(str_level);
+    m_message_level.set_pos(m_message_level.get_char_size() * 5, m_message_level.get_char_size() * 1.5f);
+
+    std::string str_lives = m_text_lives + std::to_string(m_player.get_lives());
+    m_message_lives.set_str(str_lives);
+    m_message_lives.set_pos(m_window.getSize().x - m_message_lives.get_char_size() * 5, m_message_lives.get_char_size() * 1.5f);
+}
+
+void Game::show_messages()
+{
+    m_message_level.show_message(m_window);
+    m_message_lives.show_message(m_window);
+}
+
+void Game::render_entities()
+{
+    for (auto &cell : m_cells)
+    {
+        cell->draw();
+    }
+
+    for (auto &object : m_objects)
+    {
+        object->draw();
+    }
+
+    m_player.draw();
+}
+
+void Game::run()
+{
+    while (m_window.isOpen())
+    {
+        sf::Event event;
+        while (m_window.pollEvent(event))
+        {
+            if (event.type == sf::Event::Closed || sf::Keyboard::isKeyPressed(sf::Keyboard::Escape))
+            {
+                m_window.close();
+            }
+            else if (m_state == State::Menu && m_play_button.is_pressed())
+            {
+                m_state = State::GameStarted;
+                m_window.setMouseCursorVisible(false);
+            }
+        }
+
+        update_messages();
+
+        m_window.clear();
+
+        if (m_state == State::Menu)
+        {
+            m_window.draw(m_menu_background);
+            m_play_button.draw();
+        }
+        else
+        {
+            m_window.draw(m_game_background);
+
+            m_window.setView(m_main_view);
+            render_entities();
+
+            m_window.setView(m_map_view);
+            render_entities();
+
+            m_window.setView(m_hud_view);
+            show_messages();
+        }
+
+        m_window.display();
+    }
+}
