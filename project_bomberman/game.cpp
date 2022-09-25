@@ -134,7 +134,7 @@ void Game::load_field()
             {
                 m_cells.push_back(std::make_unique<SafeCell>(*this, cell_types['.'], block_size, pos));
 
-                sf::Vector2f object_size = block_size * 0.97f;
+                sf::Vector2f object_size = block_size * 0.965f;
 
                 if (type == 'p')
                 {
@@ -222,6 +222,10 @@ void Game::run()
             {
                 m_window.close();
             }
+            else if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::M)
+            {
+                m_show_mini_map = !m_show_mini_map;
+            }
             else if (m_state == State::Menu && m_play_button.is_pressed())
             {
                 m_state = State::GameStarted;
@@ -229,6 +233,7 @@ void Game::run()
             }
         }
 
+        m_player.move();
         update_messages();
 
         m_window.clear();
@@ -245,8 +250,11 @@ void Game::run()
             m_window.setView(m_main_view);
             render_entities();
 
-            m_window.setView(m_map_view);
-            render_entities();
+            if (m_show_mini_map)
+            {
+                m_window.setView(m_map_view);
+                render_entities();
+            }
 
             m_window.setView(m_hud_view);
             show_messages();

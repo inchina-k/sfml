@@ -102,7 +102,6 @@ class Game
         void load();
         void switch_command();
         bool can_move(sf::Vector2f &dir);
-        void move();
 
     public:
         Player(Game &game);
@@ -112,6 +111,7 @@ class Game
         void set_pos(sf::Vector2f &pos);
         sf::Vector2f get_pos() const;
         size_t get_lives() const;
+        void move();
         void draw();
     };
 
@@ -155,6 +155,7 @@ class Game
     };
 
     State m_state = State::Menu;
+    bool m_show_mini_map = false;
 
     /* ---------MEMBER_FUNCTIONS/METHODS--------- */
 
