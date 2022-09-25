@@ -134,7 +134,7 @@ void Game::load_field()
             {
                 m_cells.push_back(std::make_unique<SafeCell>(*this, cell_types['.'], block_size, pos));
 
-                sf::Vector2f object_size = block_size * 0.965f;
+                sf::Vector2f object_size = block_size * 0.96f;
 
                 if (type == 'p')
                 {
