@@ -3,7 +3,7 @@
 #include <iostream>
 
 Game::Player::Player(Game &game)
-    : m_game(game), m_num_of_steps(m_max_counter), m_lives(3), m_lives_left(3)
+    : m_game(game), m_num_of_steps(m_max_counter / 1.7f), m_lives(3), m_lives_left(3)
 {
     if (!m_texture.loadFromFile("data/images/player.png"))
     {
@@ -131,8 +131,6 @@ void Game::Player::move()
 
 void Game::Player::draw()
 {
-    move();
-
     m_frames[m_anim_index][m_frame_index]->setPosition(m_pos);
     m_game.m_window.draw(*m_frames[m_anim_index][m_frame_index]);
 
