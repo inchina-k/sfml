@@ -28,7 +28,7 @@ class Game
     public:
         GameObject(Game &game, sf::Texture &texture, sf::Vector2f &size, sf::Vector2f &pos, int row, int col);
 
-        sf::Vector2f get_size() const;
+        virtual sf::Vector2f get_size() const;
         sf::Vector2f get_pos() const;
         sf::FloatRect get_bounds() const;
         virtual void draw() = 0;
@@ -68,7 +68,7 @@ class Game
         // State m_curr_state = State::Stand;
 
         void load(sf::Vector2f &size);
-        bool can_move();
+        virtual sf::Vector2f get_size() const override;
 
     public:
         Enemy(Game &game, sf::Texture &texture, sf::Vector2f &size, sf::Vector2f &pos, int row, int col);
@@ -129,7 +129,8 @@ class Game
     size_t m_curr_level;
 
     std::vector<std::unique_ptr<Enemy>> m_objects;
-    std::vector<std::vector<std::unique_ptr<GameObject>>> m_cells;
+    std::vector<std::vector<std::unique_ptr<Wall>>> m_walls;
+    std::vector<std::vector<std::unique_ptr<SafeCell>>> m_cells;
 
     Player m_player;
 

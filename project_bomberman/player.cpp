@@ -65,14 +65,13 @@ size_t Game::Player::get_lives() const
 
 bool Game::Player::can_move()
 {
-    for (const auto &cells : m_game.m_cells)
+    for (const auto &walls : m_game.m_walls)
     {
-        for (const auto &cell : cells)
+        for (const auto &wall : walls)
         {
             sf::FloatRect tmp(m_pos + m_dir, get_size());
 
-            if (auto obj = dynamic_cast<Wall *>(cell.get()) &&
-                           tmp.intersects(cell->get_bounds()))
+            if (wall && tmp.intersects(wall->get_bounds()))
             {
                 return false;
             }
@@ -127,7 +126,7 @@ void Game::Player::move()
         m_game.m_main_view.move(m_dir);
     }
 
-    m_step = m_game.m_cells.front().back()->get_size().x / m_num_of_steps;
+    m_step = m_game.m_walls.front().front()->get_size().x / m_num_of_steps;
 
     switch_command();
 }

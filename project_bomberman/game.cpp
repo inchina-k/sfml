@@ -114,9 +114,11 @@ void Game::load_field()
     std::unordered_map<char, sf::Texture> cell_types =
         {{'.', safe_cell}, {'w', wall}, {'e', enemy}};
 
-    m_objects.clear();
+    m_walls.clear();
+    m_walls.resize(m_level.size());
     m_cells.clear();
     m_cells.resize(m_level.size());
+    m_objects.clear();
 
     float cell_size = std::min(m_window.getSize().x, m_window.getSize().y) / (m_level.size() / 1.7f);
     sf::Vector2f block_size(cell_size, cell_size);
@@ -129,11 +131,13 @@ void Game::load_field()
 
             if (type == 'w')
             {
-                m_cells[i].push_back(std::make_unique<Wall>(*this, cell_types[type], block_size, pos, i, j));
+                m_walls[i].push_back(std::make_unique<Wall>(*this, cell_types[type], block_size, pos, i, j));
+                m_cells[i].push_back(nullptr);
             }
             else
             {
                 m_cells[i].push_back(std::make_unique<SafeCell>(*this, cell_types['.'], block_size, pos, i, j));
+                m_walls[i].push_back(nullptr);
 
                 sf::Vector2f object_size = block_size * 0.96f;
 
@@ -166,8 +170,8 @@ void Game::load_views()
     m_main_view.setSize(m_window.getSize().x, m_window.getSize().y);
     m_main_view.setCenter(m_player.get_pos() + m_player.get_size() / 2.f);
 
-    m_map_view.setSize(m_cells.back().back()->get_size().x * m_level.front().size(), m_cells.back().back()->get_size().y * m_level.size());
-    m_map_view.setCenter(m_cells.back().back()->get_pos() / 2.f + m_cells.back().back()->get_size() / 2.f);
+    m_map_view.setSize(m_walls.back().back()->get_size().x * m_level.front().size(), m_walls.back().back()->get_size().y * m_level.size());
+    m_map_view.setCenter(m_walls.back().back()->get_pos() / 2.f + m_walls.back().back()->get_size() / 2.f);
     m_map_view.setViewport(sf::FloatRect(0.70f, 0.70f, 0.25f, 0.25f));
 
     m_hud_view.setSize(m_window.getSize().x, m_window.getSize().y);
@@ -208,7 +212,21 @@ void Game::render_entities()
     {
         for (const auto &cell : cells)
         {
-            cell->draw();
+            if (cell)
+            {
+                cell->draw();
+            }
+        }
+    }
+
+    for (const auto &walls : m_walls)
+    {
+        for (const auto &wall : walls)
+        {
+            if (wall)
+            {
+                wall->draw();
+            }
         }
     }
 

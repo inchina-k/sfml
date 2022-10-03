@@ -63,7 +63,7 @@ Game::Enemy::Enemy(Game &game, sf::Texture &texture, sf::Vector2f &size, sf::Vec
     m_row = row;
     m_col = col;
 
-    m_step = m_game.m_cells.front().front()->get_size().x / 50;
+    m_step = m_game.m_walls.front().front()->get_size().x / 50;
 }
 
 void Game::Enemy::load(sf::Vector2f &size)
@@ -87,29 +87,12 @@ void Game::Enemy::load(sf::Vector2f &size)
     }
 }
 
-// bool Game::Enemy::can_move()
-// {
-//     int new_row = m_row;
-//     int new_col = m_col;
-
-//     if (m_dir.x == 1 || m_dir.y == 1)
-//     {
-//         new_row += m_dir.y;
-//         new_col += m_dir.x;
-//     }
-
-//     if (new_row > int(m_game.m_cells.size() - 1) || new_col > int(m_game.m_cells.front().size() - 1) ||
-//         new_row < 0 || new_col < 0)
-//     {
-//         return false;
-//     }
-//     else if (auto obj = dynamic_cast<Wall *>(m_game.m_cells[new_row][new_col].get()))
-//     {
-//         return false;
-//     }
-
-//     return true;
-// }
+sf::Vector2f Game::Enemy::get_size() const
+{
+    sf::Vector2f size(m_frames[m_anim_index][m_frame_index]->getGlobalBounds().width,
+                      m_frames[m_anim_index][m_frame_index]->getGlobalBounds().height);
+    return size;
+}
 
 void Game::Enemy::set_dir()
 {
@@ -120,7 +103,7 @@ void Game::Enemy::set_dir()
 
     for (size_t i = 0; i < d_row.size(); i++)
     {
-        if (auto obj = dynamic_cast<SafeCell *>(m_game.m_cells[m_row + d_row[i]][m_col + d_col[i]].get()))
+        if (m_game.m_cells[m_row + d_row[i]][m_col + d_col[i]])
         {
             m_dirs.emplace_back(d_col[i], d_row[i]);
         }
@@ -135,14 +118,6 @@ void Game::Enemy::set_dir()
 
 void Game::Enemy::move()
 {
-    std::cout << "move: " << m_row << ' ' << m_col << std::endl;
-
-    m_pos.x += m_dir.x * m_step;
-    m_pos.y += m_dir.y * m_step;
-
-    m_row = (m_pos.y) / m_game.m_cells.front().front()->get_size().y;
-    m_col = (m_pos.x) / m_game.m_cells.front().front()->get_size().x;
-
     int new_row = m_row;
     int new_col = m_col;
 
@@ -152,16 +127,24 @@ void Game::Enemy::move()
         new_col += m_dir.x;
     }
 
-    if (auto obj = dynamic_cast<Wall *>(m_game.m_cells[new_row][new_col].get()))
+    if (m_game.m_walls[new_row][new_col])
     {
+        std::cout << "move: " << new_row << ' ' << new_col << std::endl;
+
         m_pos.x -= m_dir.x * m_step;
         m_pos.y -= m_dir.y * m_step;
 
-        m_row = (m_pos.y) / m_game.m_cells.front().front()->get_size().y;
-        m_col = (m_pos.x) / m_game.m_cells.front().front()->get_size().x;
+        m_row = m_pos.y / m_game.m_walls.front().front()->get_size().y;
+        m_col = m_pos.x / m_game.m_walls.front().front()->get_size().x;
 
         set_dir();
     }
+
+    m_pos.x += m_dir.x * m_step;
+    m_pos.y += m_dir.y * m_step;
+
+    m_row = m_pos.y / m_game.m_walls.front().front()->get_size().y;
+    m_col = m_pos.x / m_game.m_walls.front().front()->get_size().x;
 }
 
 void Game::Enemy::draw()
