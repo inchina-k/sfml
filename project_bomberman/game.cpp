@@ -114,8 +114,9 @@ void Game::load_field()
     std::unordered_map<char, sf::Texture> cell_types =
         {{'.', safe_cell}, {'w', wall}, {'e', enemy}};
 
-    m_cells.clear();
     m_objects.clear();
+    m_cells.clear();
+    m_cells.resize(m_level.size());
 
     float cell_size = std::min(m_window.getSize().x, m_window.getSize().y) / (m_level.size() / 1.7f);
     sf::Vector2f block_size(cell_size, cell_size);
@@ -128,11 +129,11 @@ void Game::load_field()
 
             if (type == 'w')
             {
-                m_cells.push_back(std::make_unique<Wall>(*this, cell_types[type], block_size, pos));
+                m_cells[i].push_back(std::make_unique<Wall>(*this, cell_types[type], block_size, pos, i, j));
             }
             else
             {
-                m_cells.push_back(std::make_unique<SafeCell>(*this, cell_types['.'], block_size, pos));
+                m_cells[i].push_back(std::make_unique<SafeCell>(*this, cell_types['.'], block_size, pos, i, j));
 
                 sf::Vector2f object_size = block_size * 0.96f;
 
@@ -143,7 +144,7 @@ void Game::load_field()
                 }
                 else if (type == 'e')
                 {
-                    m_objects.push_back(std::make_unique<Enemy>(*this, cell_types[type], object_size, pos));
+                    m_objects.push_back(std::make_unique<Enemy>(*this, cell_types[type], block_size, pos, i, j));
                 }
             }
 
@@ -153,6 +154,11 @@ void Game::load_field()
         pos.x = 0;
         pos.y += cell_size;
     }
+
+    for (auto &object : m_objects)
+    {
+        object->set_dir();
+    }
 }
 
 void Game::load_views()
@@ -160,8 +166,8 @@ void Game::load_views()
     m_main_view.setSize(m_window.getSize().x, m_window.getSize().y);
     m_main_view.setCenter(m_player.get_pos() + m_player.get_size() / 2.f);
 
-    m_map_view.setSize(m_cells.back()->get_size().x * m_level.front().size(), m_cells.back()->get_size().y * m_level.size());
-    m_map_view.setCenter(m_cells.back()->get_pos() / 2.f + m_cells.back()->get_size() / 2.f);
+    m_map_view.setSize(m_cells.back().back()->get_size().x * m_level.front().size(), m_cells.back().back()->get_size().y * m_level.size());
+    m_map_view.setCenter(m_cells.back().back()->get_pos() / 2.f + m_cells.back().back()->get_size() / 2.f);
     m_map_view.setViewport(sf::FloatRect(0.70f, 0.70f, 0.25f, 0.25f));
 
     m_hud_view.setSize(m_window.getSize().x, m_window.getSize().y);
@@ -198,12 +204,15 @@ void Game::show_messages()
 
 void Game::render_entities()
 {
-    for (auto &cell : m_cells)
+    for (const auto &cells : m_cells)
     {
-        cell->draw();
+        for (const auto &cell : cells)
+        {
+            cell->draw();
+        }
     }
 
-    for (auto &object : m_objects)
+    for (const auto &object : m_objects)
     {
         object->draw();
     }
@@ -233,8 +242,15 @@ void Game::run()
             }
         }
 
-        m_player.move();
-        update_messages();
+        if (m_state == State::GameStarted)
+        {
+            m_player.move();
+            for (auto &object : m_objects)
+            {
+                object->move();
+            }
+            update_messages();
+        }
 
         m_window.clear();
 

@@ -63,16 +63,19 @@ size_t Game::Player::get_lives() const
     return m_lives_left;
 }
 
-bool Game::Player::can_move(sf::Vector2f &dir)
+bool Game::Player::can_move()
 {
-    for (const auto &cell : m_game.m_cells)
+    for (const auto &cells : m_game.m_cells)
     {
-        sf::FloatRect tmp(m_pos + dir, get_size());
-
-        if (auto obj = dynamic_cast<Wall *>(cell.get()) &&
-                       tmp.intersects(cell->get_bounds()))
+        for (const auto &cell : cells)
         {
-            return false;
+            sf::FloatRect tmp(m_pos + m_dir, get_size());
+
+            if (auto obj = dynamic_cast<Wall *>(cell.get()) &&
+                           tmp.intersects(cell->get_bounds()))
+            {
+                return false;
+            }
         }
     }
 
@@ -118,13 +121,13 @@ void Game::Player::switch_command()
 
 void Game::Player::move()
 {
-    if (can_move(m_dir))
+    if (can_move())
     {
         m_pos += m_dir;
         m_game.m_main_view.move(m_dir);
     }
 
-    m_step = m_game.m_cells.back()->get_size().x / m_num_of_steps;
+    m_step = m_game.m_cells.front().back()->get_size().x / m_num_of_steps;
 
     switch_command();
 }

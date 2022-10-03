@@ -18,30 +18,16 @@ class Game
         sf::Texture m_texture;
         sf::Sprite m_body;
         sf::Vector2f m_pos;
+        int m_row = 0, m_col = 0;
 
-        /* ---------MOVE--------- */
-        enum class State
-        {
-            Go,
-            Stand
-        };
-
-        State m_curr_state = State::Stand;
         static constexpr int m_max_counter = 45;
         int m_frame_index = 0;
         int m_anim_index = 0;
         int m_counter = 0;
-        // int m_num_of_steps;
-        // float m_step = 0;
-        // sf::Vector2f m_dir;
-        // bool m_can_move = true;
 
     public:
-        GameObject(Game &game, sf::Texture &texture, sf::Vector2f &size, sf::Vector2f &pos);
+        GameObject(Game &game, sf::Texture &texture, sf::Vector2f &size, sf::Vector2f &pos, int row, int col);
 
-        // bool can_move() const;
-        // void set_dir(int dr, int dc);
-        // void move();
         sf::Vector2f get_size() const;
         sf::Vector2f get_pos() const;
         sf::FloatRect get_bounds() const;
@@ -51,7 +37,7 @@ class Game
     class SafeCell : public GameObject
     {
     public:
-        SafeCell(Game &game, sf::Texture &texture, sf::Vector2f &size, sf::Vector2f &pos);
+        SafeCell(Game &game, sf::Texture &texture, sf::Vector2f &size, sf::Vector2f &pos, int row, int col);
 
         void draw() override;
     };
@@ -59,7 +45,7 @@ class Game
     class Wall : public GameObject
     {
     public:
-        Wall(Game &game, sf::Texture &texture, sf::Vector2f &size, sf::Vector2f &pos);
+        Wall(Game &game, sf::Texture &texture, sf::Vector2f &size, sf::Vector2f &pos, int row, int col);
 
         void draw() override;
     };
@@ -69,12 +55,26 @@ class Game
         std::vector<std::vector<std::unique_ptr<sf::Sprite>>> m_frames;
         float m_w = 0;
         float m_h = 0;
+        float m_step = 0;
+        sf::Vector2i m_dir;
+        int m_change_dir = true;
+
+        // enum class State
+        // {
+        //     Go,
+        //     Stand
+        // };
+        //
+        // State m_curr_state = State::Stand;
 
         void load(sf::Vector2f &size);
+        bool can_move();
 
     public:
-        Enemy(Game &game, sf::Texture &texture, sf::Vector2f &size, sf::Vector2f &pos);
+        Enemy(Game &game, sf::Texture &texture, sf::Vector2f &size, sf::Vector2f &pos, int row, int col);
 
+        void set_dir();
+        void move();
         void draw() override;
     };
 
@@ -101,7 +101,7 @@ class Game
 
         void load();
         void switch_command();
-        bool can_move(sf::Vector2f &dir);
+        bool can_move();
 
     public:
         Player(Game &game);
@@ -128,8 +128,8 @@ class Game
     std::vector<std::string> m_level;
     size_t m_curr_level;
 
-    std::vector<std::unique_ptr<GameObject>> m_objects;
-    std::vector<std::unique_ptr<GameObject>> m_cells;
+    std::vector<std::unique_ptr<Enemy>> m_objects;
+    std::vector<std::vector<std::unique_ptr<GameObject>>> m_cells;
 
     Player m_player;
 
