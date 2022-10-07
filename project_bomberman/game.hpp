@@ -92,6 +92,7 @@ class Game
         sf::Vector2f m_pos;
         sf::Vector2f m_dir;
         float m_w = 0, m_h = 0;
+        int m_row = 0, m_col = 0;
 
         int m_num_of_steps;
         float m_step = 0;
@@ -100,15 +101,16 @@ class Game
         size_t m_lives_left;
 
         void load();
-        void switch_command();
         bool can_move();
+        void switch_command();
+        sf::FloatRect get_bounds() const;
 
     public:
         Player(Game &game);
 
         void set_size(sf::Vector2f &size);
         sf::Vector2f get_size() const;
-        void set_pos(sf::Vector2f &pos);
+        void set_pos(sf::Vector2f &pos, int row, int col);
         sf::Vector2f get_pos() const;
         size_t get_lives() const;
         void move();

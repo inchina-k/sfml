@@ -48,9 +48,12 @@ sf::Vector2f Game::Player::get_size() const
     return size;
 }
 
-void Game::Player::set_pos(sf::Vector2f &pos)
+void Game::Player::set_pos(sf::Vector2f &pos, int row, int col)
 {
     m_pos = pos;
+    m_row = row;
+    m_col = col;
+    m_step = m_game.m_walls.front().front()->get_size().x / m_num_of_steps;
 }
 
 sf::Vector2f Game::Player::get_pos() const
@@ -63,17 +66,63 @@ size_t Game::Player::get_lives() const
     return m_lives_left;
 }
 
+sf::FloatRect Game::Player::get_bounds() const
+{
+    return m_frames[m_anim_index][m_frame_index]->getGlobalBounds();
+}
+
 bool Game::Player::can_move()
 {
     for (const auto &walls : m_game.m_walls)
     {
         for (const auto &wall : walls)
         {
-            sf::FloatRect tmp(m_pos + m_dir, get_size());
+            sf::FloatRect next_pos;
+            next_pos = get_bounds();
+            next_pos.left += m_dir.x;
+            next_pos.top += m_dir.y;
 
-            if (wall && tmp.intersects(wall->get_bounds()))
+            if (wall && next_pos.intersects(wall->get_bounds()))
             {
-                return false;
+                // right / left
+                if (get_bounds().left < wall->get_bounds().left &&
+                    get_bounds().left + get_bounds().width < wall->get_bounds().left + wall->get_bounds().width &&
+                    get_bounds().top < wall->get_bounds().top + wall->get_bounds().height &&
+                    get_bounds().top + get_bounds().height > wall->get_bounds().top)
+                {
+                    m_pos.x = wall->get_bounds().left - get_bounds().width;
+                    m_pos.y = get_bounds().top;
+                    return false;
+                }
+                else if (get_bounds().left > wall->get_bounds().left &&
+                         get_bounds().left + get_bounds().width > wall->get_bounds().left + wall->get_bounds().width &&
+                         get_bounds().top < wall->get_bounds().top + wall->get_bounds().height &&
+                         get_bounds().top + get_bounds().height > wall->get_bounds().top)
+                {
+                    m_pos.x = wall->get_bounds().left + wall->get_bounds().width;
+                    m_pos.y = get_bounds().top;
+                    return false;
+                }
+
+                // down / top
+                if (get_bounds().top < wall->get_bounds().top &&
+                    get_bounds().top + get_bounds().height < wall->get_bounds().top + wall->get_bounds().height &&
+                    get_bounds().left < wall->get_bounds().left + wall->get_bounds().width &&
+                    get_bounds().left + get_bounds().width > wall->get_bounds().left)
+                {
+                    m_pos.x = get_bounds().left;
+                    m_pos.y = wall->get_bounds().top - get_bounds().height;
+                    return false;
+                }
+                else if (get_bounds().top > wall->get_bounds().top &&
+                         get_bounds().top + get_bounds().height > wall->get_bounds().top + wall->get_bounds().height &&
+                         get_bounds().left < wall->get_bounds().left + wall->get_bounds().width &&
+                         get_bounds().left + get_bounds().width > wall->get_bounds().left)
+                {
+                    m_pos.x = get_bounds().left;
+                    m_pos.y = wall->get_bounds().top + wall->get_bounds().height;
+                    return false;
+                }
             }
         }
     }
@@ -120,20 +169,25 @@ void Game::Player::switch_command()
 
 void Game::Player::move()
 {
+    switch_command();
+
     if (can_move())
     {
         m_pos += m_dir;
         m_game.m_main_view.move(m_dir);
     }
-
-    m_step = m_game.m_walls.front().front()->get_size().x / m_num_of_steps;
-
-    switch_command();
 }
 
 void Game::Player::draw()
 {
-    m_frames[m_anim_index][m_frame_index]->setPosition(m_pos);
+    for (auto &frames : m_frames)
+    {
+        for (auto &frame : frames)
+        {
+            frame->setPosition(m_pos);
+        }
+    }
+
     m_game.m_window.draw(*m_frames[m_anim_index][m_frame_index]);
 
     if (++m_counter == m_max_counter)

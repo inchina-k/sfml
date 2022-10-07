@@ -139,12 +139,10 @@ void Game::load_field()
                 m_cells[i].push_back(std::make_unique<SafeCell>(*this, cell_types['.'], block_size, pos, i, j));
                 m_walls[i].push_back(nullptr);
 
-                sf::Vector2f object_size = block_size * 0.96f;
-
                 if (type == 'p')
                 {
-                    m_player.set_size(object_size);
-                    m_player.set_pos(pos);
+                    m_player.set_size(block_size);
+                    m_player.set_pos(pos, i, j);
                 }
                 else if (type == 'e')
                 {
