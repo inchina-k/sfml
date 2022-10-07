@@ -100,6 +100,17 @@ class Game
         const size_t m_lives;
         size_t m_lives_left;
 
+        enum class State
+        {
+            Down,
+            Up,
+            Left,
+            Right,
+            Stand
+        };
+
+        State m_curr_state = State::Stand;
+
         void load();
         bool can_move();
         void switch_command();

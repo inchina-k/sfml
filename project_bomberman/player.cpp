@@ -77,52 +77,34 @@ bool Game::Player::can_move()
     {
         for (const auto &wall : walls)
         {
-            sf::FloatRect next_pos;
-            next_pos = get_bounds();
+            sf::FloatRect next_pos = get_bounds();
             next_pos.left += m_dir.x;
             next_pos.top += m_dir.y;
 
             if (wall && next_pos.intersects(wall->get_bounds()))
             {
-                // right / left
-                if (get_bounds().left < wall->get_bounds().left &&
-                    get_bounds().left + get_bounds().width < wall->get_bounds().left + wall->get_bounds().width &&
-                    get_bounds().top < wall->get_bounds().top + wall->get_bounds().height &&
-                    get_bounds().top + get_bounds().height > wall->get_bounds().top)
-                {
-                    m_pos.x = wall->get_bounds().left - get_bounds().width;
-                    m_pos.y = get_bounds().top;
-                    return false;
-                }
-                else if (get_bounds().left > wall->get_bounds().left &&
-                         get_bounds().left + get_bounds().width > wall->get_bounds().left + wall->get_bounds().width &&
-                         get_bounds().top < wall->get_bounds().top + wall->get_bounds().height &&
-                         get_bounds().top + get_bounds().height > wall->get_bounds().top)
-                {
-                    m_pos.x = wall->get_bounds().left + wall->get_bounds().width;
-                    m_pos.y = get_bounds().top;
-                    return false;
-                }
-
-                // down / top
-                if (get_bounds().top < wall->get_bounds().top &&
-                    get_bounds().top + get_bounds().height < wall->get_bounds().top + wall->get_bounds().height &&
-                    get_bounds().left < wall->get_bounds().left + wall->get_bounds().width &&
-                    get_bounds().left + get_bounds().width > wall->get_bounds().left)
+                if (m_curr_state == State::Down)
                 {
                     m_pos.x = get_bounds().left;
                     m_pos.y = wall->get_bounds().top - get_bounds().height;
-                    return false;
                 }
-                else if (get_bounds().top > wall->get_bounds().top &&
-                         get_bounds().top + get_bounds().height > wall->get_bounds().top + wall->get_bounds().height &&
-                         get_bounds().left < wall->get_bounds().left + wall->get_bounds().width &&
-                         get_bounds().left + get_bounds().width > wall->get_bounds().left)
+                else if (m_curr_state == State::Up)
                 {
                     m_pos.x = get_bounds().left;
                     m_pos.y = wall->get_bounds().top + wall->get_bounds().height;
-                    return false;
                 }
+                else if (m_curr_state == State::Left)
+                {
+                    m_pos.x = wall->get_bounds().left + wall->get_bounds().width;
+                    m_pos.y = get_bounds().top;
+                }
+                else if (m_curr_state == State::Right)
+                {
+                    m_pos.x = wall->get_bounds().left - get_bounds().width;
+                    m_pos.y = get_bounds().top;
+                }
+
+                return false;
             }
         }
     }
@@ -138,6 +120,8 @@ void Game::Player::switch_command()
 
         m_dir.x = 0;
         m_dir.y = m_step;
+
+        m_curr_state = State::Down;
     }
     else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Up))
     {
@@ -145,6 +129,8 @@ void Game::Player::switch_command()
 
         m_dir.x = 0;
         m_dir.y = -m_step;
+
+        m_curr_state = State::Up;
     }
     else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Left))
     {
@@ -152,6 +138,8 @@ void Game::Player::switch_command()
 
         m_dir.x = -m_step;
         m_dir.y = 0;
+
+        m_curr_state = State::Left;
     }
     else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Right))
     {
@@ -159,11 +147,15 @@ void Game::Player::switch_command()
 
         m_dir.x = m_step;
         m_dir.y = 0;
+
+        m_curr_state = State::Right;
     }
     else
     {
         m_dir.x = 0;
         m_dir.y = 0;
+
+        m_curr_state = State::Stand;
     }
 }
 
