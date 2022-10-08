@@ -6,7 +6,7 @@
 using Random = effolkronium::random_static;
 
 Game::GameObject::GameObject(Game &game, sf::Texture &texture, sf::Vector2f &size, sf::Vector2f &pos, int row, int col)
-    : m_game(game), m_texture(texture), m_pos(pos)
+    : m_game(game), m_texture(texture), m_pos(pos), m_frame_index(Random::get(0, 2))
 {
     m_body.setTexture(m_texture);
     m_body.setScale(size.x / m_texture.getSize().x,
