@@ -94,6 +94,11 @@ sf::Vector2f Game::Enemy::get_size() const
     return size;
 }
 
+sf::FloatRect Game::Enemy::get_bounds() const
+{
+    return m_frames[m_anim_index][m_frame_index]->getGlobalBounds();
+}
+
 void Game::Enemy::set_dir()
 {
     std::vector<sf::Vector2i> m_dirs;
@@ -116,40 +121,74 @@ void Game::Enemy::set_dir()
     }
 }
 
+void Game::Enemy::check_collision_dir()
+{
+    if (m_dir.y == 1)
+    {
+        m_pos.x = get_bounds().left;
+        m_pos.y = m_game.m_walls[m_row][m_col]->get_bounds().top - get_bounds().height;
+        return;
+    }
+    else if (m_dir.y == -1)
+    {
+        m_pos.x = get_bounds().left;
+        m_pos.y = m_game.m_walls[m_row][m_col]->get_bounds().top + m_game.m_walls[m_row][m_col]->get_bounds().height;
+        return;
+    }
+    else if (m_dir.x == -1)
+    {
+        m_pos.x = m_game.m_walls[m_row][m_col]->get_bounds().left + m_game.m_walls[m_row][m_col]->get_bounds().width;
+        m_pos.y = get_bounds().top;
+        return;
+    }
+    else if (m_dir.x == 1)
+    {
+        m_pos.x = m_game.m_walls[m_row][m_col]->get_bounds().left - get_bounds().width;
+        m_pos.y = get_bounds().top;
+        return;
+    }
+}
+
 void Game::Enemy::move()
 {
-    int new_row = m_row;
-    int new_col = m_col;
+    m_pos.x += m_dir.x * m_step;
+    m_pos.y += m_dir.y * m_step;
 
-    if (m_dir.x == 1 || m_dir.y == 1)
+    m_row = m_pos.y / m_game.m_walls.front().front()->get_size().y;
+    m_col = m_pos.x / m_game.m_walls.front().front()->get_size().x;
+
+    if (m_dir.y == 1)
     {
-        new_row += m_dir.y;
-        new_col += m_dir.x;
+        m_row = (m_pos.y + get_size().y) / m_game.m_walls.front().front()->get_size().y;
+    }
+    else if (m_dir.x == 1)
+    {
+        m_col = (m_pos.x + get_size().x) / m_game.m_walls.front().front()->get_size().x;
     }
 
-    if (m_game.m_walls[new_row][new_col])
+    if (m_game.m_walls[m_row][m_col])
     {
-        std::cout << "move: " << new_row << ' ' << new_col << std::endl;
+        std::cout << "move: " << m_row << ' ' << m_col << std::endl;
 
-        m_pos.x -= m_dir.x * m_step;
-        m_pos.y -= m_dir.y * m_step;
+        check_collision_dir();
 
         m_row = m_pos.y / m_game.m_walls.front().front()->get_size().y;
         m_col = m_pos.x / m_game.m_walls.front().front()->get_size().x;
 
         set_dir();
     }
-
-    m_pos.x += m_dir.x * m_step;
-    m_pos.y += m_dir.y * m_step;
-
-    m_row = m_pos.y / m_game.m_walls.front().front()->get_size().y;
-    m_col = m_pos.x / m_game.m_walls.front().front()->get_size().x;
 }
 
 void Game::Enemy::draw()
 {
-    m_frames[m_anim_index][m_frame_index]->setPosition(m_pos);
+    for (auto &frames : m_frames)
+    {
+        for (auto &frame : frames)
+        {
+            frame->setPosition(m_pos);
+        }
+    }
+
     m_game.m_window.draw(*m_frames[m_anim_index][m_frame_index]);
 
     if (++m_counter == m_max_counter)

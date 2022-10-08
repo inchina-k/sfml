@@ -69,6 +69,8 @@ class Game
 
         void load(sf::Vector2f &size);
         virtual sf::Vector2f get_size() const override;
+        sf::FloatRect get_bounds() const;
+        void check_collision_dir();
 
     public:
         Enemy(Game &game, sf::Texture &texture, sf::Vector2f &size, sf::Vector2f &pos, int row, int col);
