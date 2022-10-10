@@ -101,24 +101,26 @@ void Game::load_field()
 
     sf::Vector2f pos(0, 0);
 
-    sf::Texture safe_cell, wall, enemy;
-
-    if (!safe_cell.loadFromFile("data/images/safe_cell.png") ||
-        !wall.loadFromFile("data/images/wall.png") ||
-        !enemy.loadFromFile("data/images/enemy.png"))
+    if (!m_texture_safe_cell.loadFromFile("data/images/safe_cell.png") ||
+        !m_texture_wall.loadFromFile("data/images/wall.png") ||
+        !m_texture_enemy.loadFromFile("data/images/enemy.png") ||
+        !m_texture_bomb.loadFromFile("data/images/bomb.png") ||
+        !m_texture_explosion.loadFromFile("data/images/explosion.png"))
     {
         std::cout << "file for an object is missing" << std::endl;
         exit(1);
     }
 
     std::unordered_map<char, sf::Texture> cell_types =
-        {{'.', safe_cell}, {'w', wall}, {'e', enemy}};
+        {{'.', m_texture_safe_cell}, {'w', m_texture_wall}, {'e', m_texture_enemy}};
 
     m_walls.clear();
     m_walls.resize(m_level.size());
     m_cells.clear();
     m_cells.resize(m_level.size());
-    m_objects.clear();
+    m_enemies.clear();
+    m_explosions.clear();
+    m_explosions.resize(m_level.size());
 
     float cell_size = std::min(m_window.getSize().x, m_window.getSize().y) / (m_level.size() / 1.7f);
     sf::Vector2f block_size(cell_size, cell_size);
@@ -146,9 +148,11 @@ void Game::load_field()
                 }
                 else if (type == 'e')
                 {
-                    m_objects.push_back(std::make_unique<Enemy>(*this, cell_types[type], block_size, pos, i, j));
+                    m_enemies.push_back(std::make_unique<Enemy>(*this, cell_types[type], block_size, pos, i, j));
                 }
             }
+
+            m_explosions[i].push_back(nullptr);
 
             pos.x += cell_size;
         }
@@ -157,9 +161,9 @@ void Game::load_field()
         pos.y += cell_size;
     }
 
-    for (auto &object : m_objects)
+    for (auto &enemy : m_enemies)
     {
-        object->set_dir();
+        enemy->set_dir();
     }
 }
 
@@ -185,6 +189,43 @@ void Game::load_messages()
 
     m_message_level.set_properties(size, style, color, color, thickness);
     m_message_lives.set_properties(size, style, color, color, thickness);
+}
+
+void Game::set_explosion(int r, int c, int dr, int dc)
+{
+    int row = r + dr;
+    int col = c + dc;
+
+    sf::Vector2f size = m_walls.front().front()->get_size();
+
+    for (int i = 0; i < 3; i++)
+    {
+        if (m_walls[row][col])
+        {
+            break;
+        }
+
+        sf::Vector2f pos = m_cells[row][col]->get_pos();
+        m_explosions[row][col].reset(new Explosion(*this, m_texture_explosion, size, pos, row, col));
+
+        row += dr;
+        col += dc;
+    }
+}
+
+void Game::set_bomb(int r, int c)
+{
+    sf::Vector2f size = m_walls.front().front()->get_size();
+    sf::Vector2f pos = m_cells[r][c]->get_pos();
+
+    m_explosions[r][c].reset(new Bomb(*this, m_texture_bomb, size, pos, r, c));
+
+    set_explosion(r, c, 1, 0);
+    set_explosion(r, c, -1, 0);
+    set_explosion(r, c, 0, 1);
+    set_explosion(r, c, 0, -1);
+
+    m_bomb_deployed = true;
 }
 
 void Game::update_messages()
@@ -228,9 +269,20 @@ void Game::render_entities()
         }
     }
 
-    for (const auto &object : m_objects)
+    for (const auto &explosions : m_explosions)
     {
-        object->draw();
+        for (const auto &explosion : explosions)
+        {
+            if (explosion)
+            {
+                explosion->draw();
+            }
+        }
+    }
+
+    for (const auto &enemy : m_enemies)
+    {
+        enemy->draw();
     }
 
     m_player.draw();
@@ -256,14 +308,22 @@ void Game::run()
                 m_state = State::GameStarted;
                 m_window.setMouseCursorVisible(false);
             }
+            else if (m_state == State::GameStarted && !m_bomb_deployed &&
+                     event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Space)
+            {
+                int r = m_player.get_row();
+                int c = m_player.get_col();
+
+                set_bomb(r, c);
+            }
         }
 
         if (m_state == State::GameStarted)
         {
             m_player.move();
-            for (auto &object : m_objects)
+            for (auto &enemy : m_enemies)
             {
-                object->move();
+                enemy->move();
             }
             update_messages();
         }

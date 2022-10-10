@@ -50,6 +50,33 @@ class Game
         void draw() override;
     };
 
+    class Bomb : public GameObject
+    {
+        std::vector<std::vector<std::unique_ptr<sf::Sprite>>> m_frames;
+        float m_w = 0;
+        float m_h = 0;
+
+        void load(sf::Vector2f &size);
+
+    public:
+        Bomb(Game &game, sf::Texture &texture, sf::Vector2f &size, sf::Vector2f &pos, int row, int col);
+        void draw() override;
+    };
+
+    class Explosion : public GameObject
+    {
+        std::vector<std::vector<std::unique_ptr<sf::Sprite>>> m_frames;
+        float m_w = 0;
+        float m_h = 0;
+
+        void load(sf::Vector2f &size);
+
+    public:
+        Explosion(Game &game, sf::Texture &texture, sf::Vector2f &size, sf::Vector2f &pos, int row, int col);
+
+        void draw() override;
+    };
+
     class Enemy : public GameObject
     {
         std::vector<std::vector<std::unique_ptr<sf::Sprite>>> m_frames;
@@ -126,6 +153,8 @@ class Game
         void set_pos(sf::Vector2f &pos, int row, int col);
         sf::Vector2f get_pos() const;
         size_t get_lives() const;
+        int get_row() const;
+        int get_col() const;
         void move();
         void draw();
     };
@@ -143,9 +172,12 @@ class Game
     std::vector<std::string> m_level;
     size_t m_curr_level;
 
-    std::vector<std::unique_ptr<Enemy>> m_objects;
+    sf::Texture m_texture_safe_cell, m_texture_wall, m_texture_enemy, m_texture_bomb, m_texture_explosion;
+
+    std::vector<std::unique_ptr<Enemy>> m_enemies;
     std::vector<std::vector<std::unique_ptr<Wall>>> m_walls;
     std::vector<std::vector<std::unique_ptr<SafeCell>>> m_cells;
+    std::vector<std::vector<std::unique_ptr<GameObject>>> m_explosions;
 
     Player m_player;
 
@@ -172,6 +204,7 @@ class Game
 
     State m_state = State::Menu;
     bool m_show_mini_map = false;
+    bool m_bomb_deployed = false;
 
     /* ---------MEMBER_FUNCTIONS/METHODS--------- */
 
@@ -180,6 +213,8 @@ class Game
     void load_field();
     void load_views();
     void load_messages();
+    void set_explosion(int r, int c, int dr, int dc);
+    void set_bomb(int r, int c);
     void update_messages();
     void show_messages();
     // void load_sounds();

@@ -71,6 +71,16 @@ sf::FloatRect Game::Player::get_bounds() const
     return m_frames[m_anim_index][m_frame_index]->getGlobalBounds();
 }
 
+int Game::Player::get_row() const
+{
+    return m_row;
+}
+
+int Game::Player::get_col() const
+{
+    return m_col;
+}
+
 bool Game::Player::can_move()
 {
     for (const auto &walls : m_game.m_walls)
@@ -168,6 +178,9 @@ void Game::Player::move()
         m_pos += m_dir;
         m_game.m_main_view.move(m_dir);
     }
+
+    m_row = (m_pos.y + get_size().y / 2) / m_game.m_walls.front().front()->get_size().y;
+    m_col = (m_pos.x + get_size().x / 2) / m_game.m_walls.front().front()->get_size().x;
 }
 
 void Game::Player::draw()

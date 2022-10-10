@@ -6,7 +6,7 @@
 using Random = effolkronium::random_static;
 
 Game::GameObject::GameObject(Game &game, sf::Texture &texture, sf::Vector2f &size, sf::Vector2f &pos, int row, int col)
-    : m_game(game), m_texture(texture), m_pos(pos), m_frame_index(Random::get(0, 2))
+    : m_game(game), m_texture(texture), m_pos(pos)
 {
     m_body.setTexture(m_texture);
     m_body.setScale(size.x / m_texture.getSize().x,
@@ -52,6 +52,120 @@ void Game::Wall::draw()
     m_game.m_window.draw(m_body);
 }
 
+Game::Bomb::Bomb(Game &game, sf::Texture &texture, sf::Vector2f &size, sf::Vector2f &pos, int row, int col)
+    : GameObject(game, texture, size, pos, row, col)
+{
+    m_w = m_texture.getSize().x / 2;
+    m_h = m_texture.getSize().y / 2;
+
+    load(size);
+
+    m_row = row;
+    m_col = col;
+}
+
+void Game::Bomb::load(sf::Vector2f &size)
+{
+    m_frames.resize(2);
+
+    for (size_t i = 0; i < 2; i++)
+    {
+        for (size_t j = 0; j < 2; j++)
+        {
+            m_frames[i].push_back(std::make_unique<sf::Sprite>(m_texture, sf::IntRect(j * m_w, i * m_h, m_w, m_h)));
+        }
+    }
+
+    for (auto &frames : m_frames)
+    {
+        for (auto &frame : frames)
+        {
+            frame->setScale(size.x / frame->getLocalBounds().width, size.y / frame->getLocalBounds().height);
+        }
+    }
+}
+
+void Game::Bomb::draw()
+{
+    for (auto &frames : m_frames)
+    {
+        for (auto &frame : frames)
+        {
+            frame->setPosition(m_pos);
+        }
+    }
+
+    std::cout << "start draw " << m_anim_index << ' ' << m_frame_index << ' ' << m_counter << std::endl;
+    m_game.m_window.draw(*m_frames[m_anim_index][m_frame_index]);
+
+    if (++m_counter == m_max_counter)
+    {
+        if (++m_frame_index == 2)
+        {
+            m_frame_index = 0;
+        }
+
+        m_counter = 0;
+    }
+}
+
+Game::Explosion::Explosion(Game &game, sf::Texture &texture, sf::Vector2f &size, sf::Vector2f &pos, int row, int col)
+    : GameObject(game, texture, size, pos, row, col)
+{
+    m_w = m_texture.getSize().x / 2;
+    m_h = m_texture.getSize().y;
+
+    load(size);
+
+    m_row = row;
+    m_col = col;
+}
+
+void Game::Explosion::load(sf::Vector2f &size)
+{
+    m_frames.resize(1);
+
+    for (size_t i = 0; i < 1; i++)
+    {
+        for (size_t j = 0; j < 2; j++)
+        {
+            m_frames[i].push_back(std::make_unique<sf::Sprite>(m_texture, sf::IntRect(j * m_w, i * m_h, m_w, m_h)));
+        }
+    }
+
+    for (auto &frames : m_frames)
+    {
+        for (auto &frame : frames)
+        {
+            frame->setScale(size.x / frame->getLocalBounds().width, size.y / frame->getLocalBounds().height);
+        }
+    }
+}
+
+void Game::Explosion::draw()
+{
+    for (auto &frames : m_frames)
+    {
+        for (auto &frame : frames)
+        {
+            frame->setPosition(m_pos);
+        }
+    }
+
+    std::cout << "start draw " << m_anim_index << ' ' << m_frame_index << ' ' << m_counter << std::endl;
+    m_game.m_window.draw(*m_frames[m_anim_index][m_frame_index]);
+
+    if (++m_counter == m_max_counter)
+    {
+        if (++m_frame_index == 2)
+        {
+            m_frame_index = 0;
+        }
+
+        m_counter = 0;
+    }
+}
+
 Game::Enemy::Enemy(Game &game, sf::Texture &texture, sf::Vector2f &size, sf::Vector2f &pos, int row, int col)
     : GameObject(game, texture, size, pos, row, col), m_dir(1, 0)
 {
@@ -63,6 +177,7 @@ Game::Enemy::Enemy(Game &game, sf::Texture &texture, sf::Vector2f &size, sf::Vec
     m_row = row;
     m_col = col;
 
+    m_frame_index = Random::get(0, 2);
     m_step = m_game.m_walls.front().front()->get_size().x / 50;
 }
 
@@ -168,8 +283,6 @@ void Game::Enemy::move()
 
     if (m_game.m_walls[m_row][m_col])
     {
-        std::cout << "move: " << m_row << ' ' << m_col << std::endl;
-
         check_collision_dir();
 
         m_row = m_pos.y / m_game.m_walls.front().front()->get_size().y;
