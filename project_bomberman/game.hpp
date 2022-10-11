@@ -58,10 +58,12 @@ class Game
         int m_explosion_counter = 150;
 
         void load(sf::Vector2f &size);
+        void set_explosion(int r, int c, int dr, int dc);
         void handle_explosion();
 
     public:
         Bomb(Game &game, sf::Texture &texture, sf::Vector2f &size, sf::Vector2f &pos, int row, int col);
+        bool is_exploded() const;
         void draw() override;
     };
 
@@ -215,7 +217,6 @@ class Game
     void load_field();
     void load_views();
     void load_messages();
-    void set_explosion(int r, int c, int dr, int dc);
     void set_bomb(int r, int c);
     void update_messages();
     void show_messages();

@@ -191,39 +191,12 @@ void Game::load_messages()
     m_message_lives.set_properties(size, style, color, color, thickness);
 }
 
-void Game::set_explosion(int r, int c, int dr, int dc)
-{
-    int row = r + dr;
-    int col = c + dc;
-
-    sf::Vector2f size = m_walls.front().front()->get_size();
-
-    for (int i = 0; i < 3; i++)
-    {
-        if (m_walls[row][col])
-        {
-            break;
-        }
-
-        sf::Vector2f pos = m_cells[row][col]->get_pos();
-        m_explosions[row][col].reset(new Explosion(*this, m_texture_explosion, size, pos, row, col));
-
-        row += dr;
-        col += dc;
-    }
-}
-
 void Game::set_bomb(int r, int c)
 {
     sf::Vector2f size = m_walls.front().front()->get_size();
     sf::Vector2f pos = m_cells[r][c]->get_pos();
 
     m_explosions[r][c].reset(new Bomb(*this, m_texture_bomb, size, pos, r, c));
-
-    set_explosion(r, c, 1, 0);
-    set_explosion(r, c, -1, 0);
-    set_explosion(r, c, 0, 1);
-    set_explosion(r, c, 0, -1);
 
     m_bomb_deployed = true;
 }

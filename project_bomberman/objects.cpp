@@ -85,13 +85,40 @@ void Game::Bomb::load(sf::Vector2f &size)
     }
 }
 
+void Game::Bomb::set_explosion(int r, int c, int dr, int dc)
+{
+    int row = r + dr;
+    int col = c + dc;
+
+    sf::Vector2f size = m_game.m_walls.front().front()->get_size();
+
+    for (int i = 0; i < 3; i++)
+    {
+        if (m_game.m_walls[row][col])
+        {
+            break;
+        }
+
+        sf::Vector2f pos = m_game.m_cells[row][col]->get_pos();
+        m_game.m_explosions[row][col].reset(new Explosion(m_game, m_game.m_texture_explosion, size, pos, row, col));
+
+        row += dr;
+        col += dc;
+    }
+}
+
 void Game::Bomb::handle_explosion()
 {
     if (--m_explosion_counter == 0)
     {
         m_anim_index = 1;
+
+        set_explosion(m_row, m_col, 1, 0);
+        set_explosion(m_row, m_col, -1, 0);
+        set_explosion(m_row, m_col, 0, 1);
+        set_explosion(m_row, m_col, 0, -1);
     }
-    else if (m_explosion_counter < -10)
+    else if (m_explosion_counter < -15)
     {
         for (auto &explosions : m_game.m_explosions)
         {
