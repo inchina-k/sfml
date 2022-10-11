@@ -85,6 +85,26 @@ void Game::Bomb::load(sf::Vector2f &size)
     }
 }
 
+void Game::Bomb::handle_explosion()
+{
+    if (--m_explosion_counter == 0)
+    {
+        m_anim_index = 1;
+    }
+    else if (m_explosion_counter < -10)
+    {
+        for (auto &explosions : m_game.m_explosions)
+        {
+            for (auto &explosion : explosions)
+            {
+                explosion.release();
+            }
+        }
+
+        m_game.m_bomb_deployed = false;
+    }
+}
+
 void Game::Bomb::draw()
 {
     for (auto &frames : m_frames)
@@ -95,8 +115,9 @@ void Game::Bomb::draw()
         }
     }
 
-    std::cout << "start draw " << m_anim_index << ' ' << m_frame_index << ' ' << m_counter << std::endl;
     m_game.m_window.draw(*m_frames[m_anim_index][m_frame_index]);
+
+    handle_explosion();
 
     if (++m_counter == m_max_counter)
     {
@@ -152,7 +173,6 @@ void Game::Explosion::draw()
         }
     }
 
-    std::cout << "start draw " << m_anim_index << ' ' << m_frame_index << ' ' << m_counter << std::endl;
     m_game.m_window.draw(*m_frames[m_anim_index][m_frame_index]);
 
     if (++m_counter == m_max_counter)

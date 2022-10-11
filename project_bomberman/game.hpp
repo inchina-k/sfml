@@ -55,8 +55,10 @@ class Game
         std::vector<std::vector<std::unique_ptr<sf::Sprite>>> m_frames;
         float m_w = 0;
         float m_h = 0;
+        int m_explosion_counter = 150;
 
         void load(sf::Vector2f &size);
+        void handle_explosion();
 
     public:
         Bomb(Game &game, sf::Texture &texture, sf::Vector2f &size, sf::Vector2f &pos, int row, int col);
