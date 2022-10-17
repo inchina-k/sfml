@@ -163,7 +163,10 @@ void Game::load_field()
 
     for (auto &enemy : m_enemies)
     {
-        enemy->set_dir();
+        if (enemy)
+        {
+            enemy->set_dir();
+        }
     }
 }
 
@@ -191,12 +194,12 @@ void Game::load_messages()
     m_message_lives.set_properties(size, style, color, color, thickness);
 }
 
-void Game::set_bomb(int r, int c)
+void Game::set_bomb(int r, int c, int cells)
 {
     sf::Vector2f size = m_walls.front().front()->get_size();
     sf::Vector2f pos = m_cells[r][c]->get_pos();
 
-    m_explosions[r][c].reset(new Bomb(*this, m_texture_bomb, size, pos, r, c));
+    m_explosions[r][c].reset(new Bomb(*this, m_texture_bomb, size, pos, r, c, cells));
 
     m_bomb_deployed = true;
 }
@@ -210,6 +213,38 @@ void Game::update_messages()
     std::string str_lives = m_text_lives + std::to_string(m_player.get_lives());
     m_message_lives.set_str(str_lives);
     m_message_lives.set_pos(m_window.getSize().x - m_message_lives.get_char_size() * 5, m_message_lives.get_char_size() * 1.5f);
+}
+
+void Game::update_entities()
+{
+    m_player.move();
+
+    for (auto &enemy : m_enemies)
+    {
+        if (enemy)
+        {
+            enemy->move();
+        }
+    }
+
+    update_messages();
+
+    for (const auto &explosions : m_explosions)
+    {
+        for (const auto &explosion : explosions)
+        {
+            if (explosion && explosion->is_active())
+            {
+                for (auto &enemy : m_enemies)
+                {
+                    if (enemy && enemy->get_bounds().intersects(explosion->get_bounds()))
+                    {
+                        enemy.release();
+                    }
+                }
+            }
+        }
+    }
 }
 
 void Game::show_messages()
@@ -255,7 +290,10 @@ void Game::render_entities()
 
     for (const auto &enemy : m_enemies)
     {
-        enemy->draw();
+        if (enemy)
+        {
+            enemy->draw();
+        }
     }
 
     m_player.draw();
@@ -287,18 +325,13 @@ void Game::run()
                 int r = m_player.get_row();
                 int c = m_player.get_col();
 
-                set_bomb(r, c);
+                set_bomb(r, c, 3);
             }
         }
 
         if (m_state == State::GameStarted)
         {
-            m_player.move();
-            for (auto &enemy : m_enemies)
-            {
-                enemy->move();
-            }
-            update_messages();
+            update_entities();
         }
 
         m_window.clear();

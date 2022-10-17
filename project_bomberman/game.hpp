@@ -19,6 +19,7 @@ class Game
         sf::Sprite m_body;
         sf::Vector2f m_pos;
         int m_row = 0, m_col = 0;
+        bool m_active = false;
 
         static constexpr int m_max_counter = 45;
         int m_frame_index = 0;
@@ -30,7 +31,11 @@ class Game
 
         virtual sf::Vector2f get_size() const;
         sf::Vector2f get_pos() const;
-        sf::FloatRect get_bounds() const;
+        virtual sf::FloatRect get_bounds() const;
+        bool is_active() const;
+        void set_active(bool b);
+        int get_row() const;
+        int get_col() const;
         virtual void draw() = 0;
     };
 
@@ -56,13 +61,16 @@ class Game
         float m_w = 0;
         float m_h = 0;
         int m_explosion_counter = 150;
+        int m_cells;
 
         void load(sf::Vector2f &size);
         void set_explosion(int r, int c, int dr, int dc);
         void handle_explosion();
 
     public:
-        Bomb(Game &game, sf::Texture &texture, sf::Vector2f &size, sf::Vector2f &pos, int row, int col);
+        Bomb(Game &game, sf::Texture &texture, sf::Vector2f &size, sf::Vector2f &pos, int row, int col, int cells);
+
+        sf::FloatRect get_bounds() const override;
         bool is_exploded() const;
         void draw() override;
     };
@@ -78,6 +86,7 @@ class Game
     public:
         Explosion(Game &game, sf::Texture &texture, sf::Vector2f &size, sf::Vector2f &pos, int row, int col);
 
+        sf::FloatRect get_bounds() const override;
         void draw() override;
     };
 
@@ -99,14 +108,14 @@ class Game
         // State m_curr_state = State::Stand;
 
         void load(sf::Vector2f &size);
-        virtual sf::Vector2f get_size() const override;
-        sf::FloatRect get_bounds() const;
+        sf::Vector2f get_size() const override;
         void check_collision_dir();
 
     public:
         Enemy(Game &game, sf::Texture &texture, sf::Vector2f &size, sf::Vector2f &pos, int row, int col);
 
         void set_dir();
+        sf::FloatRect get_bounds() const override;
         void move();
         void draw() override;
     };
@@ -217,8 +226,9 @@ class Game
     void load_field();
     void load_views();
     void load_messages();
-    void set_bomb(int r, int c);
+    void set_bomb(int r, int c, int cells);
     void update_messages();
+    void update_entities();
     void show_messages();
     // void load_sounds();
     // void update_game_state();
