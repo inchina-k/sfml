@@ -221,9 +221,13 @@ void Game::update_entities()
 
     for (auto &enemy : m_enemies)
     {
-        if (enemy)
+        if (enemy && enemy->is_active())
         {
             enemy->move();
+        }
+        else if (enemy && !enemy->is_active() && enemy->should_be_released())
+        {
+            enemy.release();
         }
     }
 
@@ -239,7 +243,12 @@ void Game::update_entities()
                 {
                     if (enemy && enemy->get_bounds().intersects(explosion->get_bounds()))
                     {
-                        enemy.release();
+                        if (enemy->is_active())
+                        {
+                            enemy->set_active(false);
+                            enemy->set_curr_anim_index(1);
+                            enemy->set_curr_frame_index(0);
+                        }
                     }
                 }
             }

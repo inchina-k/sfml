@@ -34,6 +34,10 @@ class Game
         virtual sf::FloatRect get_bounds() const;
         bool is_active() const;
         void set_active(bool b);
+        int get_curr_anim_index() const;
+        int get_curr_frame_index() const;
+        void set_curr_anim_index(int index);
+        void set_curr_frame_index(int index);
         int get_row() const;
         int get_col() const;
         virtual void draw() = 0;
@@ -98,14 +102,7 @@ class Game
         float m_step = 0;
         sf::Vector2i m_dir;
         int m_change_dir = true;
-
-        // enum class State
-        // {
-        //     Go,
-        //     Stand
-        // };
-        //
-        // State m_curr_state = State::Stand;
+        bool m_should_be_released = false;
 
         void load(sf::Vector2f &size);
         sf::Vector2f get_size() const override;
@@ -116,6 +113,7 @@ class Game
 
         void set_dir();
         sf::FloatRect get_bounds() const override;
+        bool should_be_released() const;
         void move();
         void draw() override;
     };
