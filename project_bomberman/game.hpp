@@ -154,16 +154,18 @@ class Game
         void load();
         bool can_move();
         void switch_command();
-        sf::FloatRect get_bounds() const;
 
     public:
         Player(Game &game);
 
+        sf::FloatRect get_bounds() const;
         void set_size(sf::Vector2f &size);
         sf::Vector2f get_size() const;
         void set_pos(sf::Vector2f &pos, int row, int col);
         sf::Vector2f get_pos() const;
         size_t get_lives() const;
+        void reduce_lives();
+        void heal();
         int get_row() const;
         int get_col() const;
         void move();
@@ -185,6 +187,7 @@ class Game
 
     sf::Texture m_texture_safe_cell, m_texture_wall, m_texture_enemy, m_texture_bomb, m_texture_explosion;
 
+    int m_total_enemies = 0;
     std::vector<std::unique_ptr<Enemy>> m_enemies;
     std::vector<std::vector<std::unique_ptr<Wall>>> m_walls;
     std::vector<std::vector<std::unique_ptr<SafeCell>>> m_cells;
@@ -196,6 +199,11 @@ class Game
     std::string m_text_lives = "lives: ";
     Message m_message_level;
     Message m_message_lives;
+
+    std::string m_text_game_won = "Mission completed";
+    std::string m_text_game_lost = "Mission failed";
+    std::string m_text_restart_level = "Life lost";
+    Message m_message_game_state;
 
     sf::Texture m_menu_texture;
     sf::Texture m_game_texture;
@@ -210,12 +218,14 @@ class Game
         Menu,
         GameStarted,
         GameWon,
-        GameLost
+        GameLost,
+        RestartLevel
     };
 
     State m_state = State::Menu;
     bool m_show_mini_map = false;
     bool m_bomb_deployed = false;
+    bool m_reduce_player_lives = false;
 
     /* ---------MEMBER_FUNCTIONS/METHODS--------- */
 
@@ -225,12 +235,14 @@ class Game
     void load_views();
     void load_messages();
     void set_bomb(int r, int c, int cells);
+    void handle_explosions();
+    void update_game_state();
     void update_messages();
     void update_entities();
     void show_messages();
     // void load_sounds();
-    // void update_game_state();
-    // void change_level();
+    void change_level();
+    void reload_level();
     void render_entities();
 
 public:

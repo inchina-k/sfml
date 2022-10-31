@@ -66,6 +66,16 @@ size_t Game::Player::get_lives() const
     return m_lives_left;
 }
 
+void Game::Player::reduce_lives()
+{
+    --m_lives_left;
+}
+
+void Game::Player::heal()
+{
+    m_lives_left = m_lives;
+}
+
 sf::FloatRect Game::Player::get_bounds() const
 {
     return m_frames[m_anim_index][m_frame_index]->getGlobalBounds();
